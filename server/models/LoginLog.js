@@ -9,7 +9,6 @@ const loginLogSchema = new mongoose.Schema(
       type: String,
       enum: ['login_success', 'login_failed', 'logout', 'blocked', 'banned', 'unbanned', 'force_logout'],
       required: true,
-      index: true,
     },
     reason: String,
     ip: String,
