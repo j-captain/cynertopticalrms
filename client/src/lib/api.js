@@ -1,7 +1,20 @@
 import axios from 'axios';
 
+const API_ORIGIN =
+  import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
+if (import.meta.env.PROD && !import.meta.env.VITE_API_URL) {
+  // eslint-disable-next-line no-console
+  console.error(
+    '❌ VITE_API_URL is not set in the production build. ' +
+    'Set it in Vercel → Settings → Environment Variables, then redeploy.'
+  );
+}
+
 const api = axios.create({
-  baseURL: '/api',
+  // Your route calls are '/auth/login', '/patients', etc.
+  // The backend mounts everything under '/api', so we add it here once.
+  baseURL: `${API_ORIGIN}/api`,
   withCredentials: true,
 });
 
@@ -14,7 +27,10 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (res) => res,
   (err) => {
-    if (err.response?.status === 401 && !err.config?.url?.includes('/auth/login')) {
+    if (
+      err.response?.status === 401 &&
+      !err.config?.url?.includes('/auth/login')
+    ) {
       localStorage.removeItem('cynert_token');
       if (!window.location.pathname.startsWith('/login')) {
         window.location.href = '/login';
