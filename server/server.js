@@ -31,7 +31,6 @@ import loginLogsRouter from './routes/loginLogs.js';
 import billingRouter from './routes/billing.js';
 import paymentChannelsRouter from './routes/paymentChannels.js';
 
-
 const app = express();
 app.set('trust proxy', 1);
 
@@ -146,14 +145,50 @@ app.use(notFound);
 app.use(errorHandler);
 
 // ───────────────────────────────────────────────────────────────
-// 11. Boot.
+// 11. Boot — listen FIRST, then connect to DB.
+//     Render requires an open port within its scan window, so
+//     binding must not wait on Mongo or admin bootstrap.
 // ───────────────────────────────────────────────────────────────
-const start = async () => {
-  await connectDB();
-  await bootstrapAdmin();
-  app.listen(env.PORT, () =>
-    console.log(`🚀 Server running on http://localhost:${env.PORT}`)
-  );
-};
+const PORT = env.PORT || 3000;
 
-start();
+const server = app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(
+    `   MONGO_URI host: ${process.env.MONGO_URI?.split('@')[1] || '⚠️  NOT SET'}`
+  );
+  console.log(`   CLIENT_URL: ${env.CLIENT_URL}`);
+  if (env.hasMissingRequired) {
+    console.log('   ⚠️  Some required env vars are missing — DB routes will fail.');
+  }
+});
+
+// Connect to Mongo AFTER the port is open.
+connectDB()
+  .then(() => {
+    console.log('✅ MongoDB connected');
+    return bootstrapAdmin();
+  })
+  .then(() => console.log('✅ Admin bootstrap complete'))
+  .catch((err) => {
+    // Do NOT exit — keep the process alive so Render's logs show the real error.
+    console.error('❌ Startup error:', err.message);
+    if (err.message?.includes('ECONNREFUSED') || err.message?.includes('127.0.0.1')) {
+      console.error(
+        '   → MONGO_URI is pointing at localhost. Set it in Render → Environment.'
+      );
+    } else if (err.message?.toLowerCase().includes('authentication')) {
+      console.error(
+        '   → Atlas rejected the credentials. Check the password (URL-encode @ → %40).'
+      );
+    } else if (err.message?.toLowerCase().includes('server selection')) {
+      console.error(
+        '   → Cannot reach Atlas. Add 0.0.0.0/0 in Atlas → Network Access.'
+      );
+    }
+  });
+
+// Graceful shutdown so Render restarts don't leave sockets dangling.
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received, closing server');
+  server.close(() => process.exit(0));
+});
