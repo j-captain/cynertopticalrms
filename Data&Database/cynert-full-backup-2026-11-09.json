@@ -1,0 +1,1041 @@
+{
+  "exportedAt": "2026-11-09T04:27:47.291Z",
+  "dbName": "cynert_optical",
+  "collections": {
+    "users": [
+      {
+        "_id": "6aee8c853938fd0d2a5255c2",
+        "name": "Admin",
+        "email": "jkarranja@bitrisesolutions.co.ke",
+        "password": "$2a$12$PY.kgXktvOPdK1VFK2DgfeOlBwiMmlBmUKSsmh2ZC0V/O2bOqSOzu",
+        "role": "admin",
+        "createdAt": "2026-11-07T02:27:17.486Z",
+        "updatedAt": "2026-11-09T00:24:14.752Z",
+        "__v": 0,
+        "lastLogin": "2026-11-09T00:24:14.752Z"
+      },
+      {
+        "_id": "6af017e3775d0beb5c052c53",
+        "name": "Admin",
+        "email": "jkarranjacynertoptical@gmail.com",
+        "password": "$2a$12$S6ARz2L3jNkk2XSPXHijFu/e./7BFQfCnSu3E2VvbnNPbbQdT7ifO",
+        "role": "staff",
+        "createdAt": "2026-11-08T06:34:11.763Z",
+        "updatedAt": "2026-11-08T18:51:45.582Z",
+        "__v": 0,
+        "lastLogin": "2026-11-08T18:51:45.577Z"
+      }
+    ],
+    "patients": [
+      {
+        "_id": "6af0e377c337e989d6852672",
+        "name": "Dennis Ndegwa Maina",
+        "systemNumber": "5431",
+        "lensType": "Progressive Photo UPTO 2 CYL",
+        "rxBe": "-1.50",
+        "rxAdd": "+2.50",
+        "rxPd": "66",
+        "diagnoses": [
+          {
+            "code": "9B76",
+            "description": "Myopia"
+          },
+          {
+            "code": "9D00.3",
+            "description": "Presbyopia"
+          }
+        ],
+        "scheme": "Insurance",
+        "insurance": "SHA Mwalimu Medical Cover",
+        "lensAmount": 10000,
+        "frameCode": "OPH 01 0202 52[]18 - 140 BLK / (2.5 NVG)",
+        "frameAmount": 5000,
+        "preAuthDate": "2026-09-05T00:00:00.000Z",
+        "orderPlaced": true,
+        "orderDelivered": true,
+        "orderHandedToClient": true,
+        "complaint": "Reduced near and distant vision.",
+        "createdAt": "2026-11-08T21:02:47.245Z",
+        "updatedAt": "2026-11-08T21:20:18.113Z",
+        "__v": 0,
+        "orderedAt": "2026-11-08T21:06:11.968Z",
+        "orderedBy": "6aee8c853938fd0d2a5255c2",
+        "submissionDate": "2026-09-05T09:00:00.000Z",
+        "deliveredAt": "2026-11-08T21:06:19.091Z",
+        "handedAt": "2026-11-08T21:06:23.492Z"
+      },
+      {
+        "_id": "6af0e5dc23987f5c57067ad9",
+        "name": "John Gicuki Wachira",
+        "systemNumber": "5737",
+        "lensType": "Bifocal Glass Photo MAR UPTO 2 CYL",
+        "rxBe": "-0.75",
+        "rxAdd": "+2.00",
+        "rxPd": "70",
+        "diagnoses": [
+          {
+            "code": "9B76",
+            "description": "Myopia"
+          },
+          {
+            "code": "9D00.3",
+            "description": "Presbyopia"
+          },
+          {
+            "code": "9A06.1",
+            "description": "Dry Eye Syndrome"
+          }
+        ],
+        "scheme": "Insurance",
+        "insurance": "SHA Usalama Medical Cover",
+        "lensAmount": 10000,
+        "frameCode": "OPH 312 0302 52[]19 - 140 GUN BLK",
+        "frameAmount": 5000,
+        "preAuthDate": "2026-09-12T00:00:00.000Z",
+        "orderPlaced": true,
+        "orderDelivered": true,
+        "orderHandedToClient": true,
+        "complaint": "Itching\nSensitivity to bright light\nReduced near Vision",
+        "createdAt": "2026-11-08T21:13:00.712Z",
+        "updatedAt": "2026-11-08T21:14:24.068Z",
+        "__v": 0,
+        "orderedAt": "2026-11-08T21:13:28.733Z",
+        "orderedBy": "6aee8c853938fd0d2a5255c2",
+        "submissionDate": "2026-09-12T09:00:00.000Z",
+        "deliveredAt": "2026-11-08T21:13:42.628Z",
+        "handedAt": "2026-11-08T21:14:24.067Z"
+      },
+      {
+        "_id": "6af0e77d23987f5c57067afb",
+        "name": "Justus Fundi Njiru",
+        "systemNumber": "5644",
+        "lensType": "Bifocal Glass Photo MAR UPTO 2 CYL",
+        "rxBe": "-0.00",
+        "rxAdd": "+1.25",
+        "rxPd": "70",
+        "diagnoses": [
+          {
+            "code": "9D00.3",
+            "description": "Presbyopia"
+          }
+        ],
+        "scheme": "Insurance",
+        "insurance": "SHA Mwalimu Medical Cover",
+        "lensAmount": 10000,
+        "frameCode": "TG0824 L7082GRY (LANTIS)",
+        "frameAmount": 5000,
+        "preAuthDate": "2026-09-05T00:00:00.000Z",
+        "orderPlaced": true,
+        "orderDelivered": true,
+        "orderHandedToClient": true,
+        "complaint": "Itching\nReduced near vision",
+        "createdAt": "2026-11-08T21:19:57.343Z",
+        "updatedAt": "2026-11-08T21:20:48.598Z",
+        "__v": 0,
+        "orderedAt": "2026-11-08T21:20:39.841Z",
+        "orderedBy": "6aee8c853938fd0d2a5255c2",
+        "submissionDate": "2026-09-05T09:00:00.000Z",
+        "deliveredAt": "2026-11-08T21:20:45.035Z",
+        "handedAt": "2026-11-08T21:20:48.598Z"
+      },
+      {
+        "_id": "6af0e9fe23987f5c57067b37",
+        "name": "Awuor Everline Ochieng",
+        "systemNumber": "5710",
+        "lensType": "Single Vision (Plastic) Photo/Transition MAR",
+        "rxBe": "-0.25",
+        "rxAdd": "+0.00",
+        "rxPd": "65",
+        "diagnoses": [
+          {
+            "code": "9B76",
+            "description": "Myopia"
+          },
+          {
+            "code": "9D45",
+            "description": "Photophobia"
+          }
+        ],
+        "scheme": "Insurance",
+        "insurance": "SHA Usalama Medical Cover",
+        "lensAmount": 4000,
+        "frameCode": "DG0924 L6082 PLM",
+        "frameAmount": 5000,
+        "preAuthDate": "2026-09-05T00:00:00.000Z",
+        "orderPlaced": true,
+        "orderDelivered": true,
+        "orderHandedToClient": false,
+        "complaint": "Eye pain\nSensitivity to bright light",
+        "createdAt": "2026-11-08T21:30:38.736Z",
+        "updatedAt": "2026-11-09T00:05:53.290Z",
+        "__v": 2,
+        "orderedAt": "2026-11-08T21:31:01.930Z",
+        "orderedBy": "6aee8c853938fd0d2a5255c2",
+        "submissionDate": "2026-09-05T09:00:00.000Z",
+        "deliveredAt": "2026-11-08T21:31:07.199Z",
+        "documents": [
+          {
+            "kind": "prescription",
+            "filename": "prescription.pdf",
+            "originalName": "AWUOR EVERLINE OCHIENG OPTICAL PRESCRIPTION.pdf",
+            "size": 122125,
+            "mimetype": "application/pdf",
+            "uploadedAt": "2026-11-09T00:05:45.396Z",
+            "uploadedBy": "6aee8c853938fd0d2a5255c2"
+          },
+          {
+            "kind": "diagnostic",
+            "filename": "diagnostic.pdf",
+            "originalName": "AWUOR EVERLINE OCHIENG OPTICAL DIAGNOSTIC.pdf",
+            "size": 330422,
+            "mimetype": "application/pdf",
+            "uploadedAt": "2026-11-09T00:05:53.285Z",
+            "uploadedBy": "6aee8c853938fd0d2a5255c2"
+          }
+        ]
+      },
+      {
+        "_id": "6af1443e52efb63352567e2c",
+        "name": "John Murithi Mati",
+        "systemNumber": "5322",
+        "lensType": "Progressive Photo UPTO 2 CYL",
+        "rxBe": "-0.00",
+        "rxAdd": "+2.00",
+        "rxPd": "65",
+        "diagnoses": [
+          {
+            "code": "9B76",
+            "description": "Myopia"
+          },
+          {
+            "code": "9D00.3",
+            "description": "Presbyopia"
+          }
+        ],
+        "scheme": "Insurance",
+        "insurance": "SHA Usalama Medical Cover",
+        "lensAmount": 12000,
+        "frameCode": "OPH 301 102 52[]17 - 145 BLK",
+        "frameAmount": 5000,
+        "preAuthDate": "2026-09-05T00:00:00.000Z",
+        "orderPlaced": true,
+        "orderDelivered": true,
+        "orderHandedToClient": true,
+        "complaint": "Reduced near vision.",
+        "documents": [],
+        "createdAt": "2026-11-09T03:55:42.617Z",
+        "updatedAt": "2026-11-09T04:10:43.033Z",
+        "__v": 0,
+        "orderedAt": "2026-11-09T04:10:23.787Z",
+        "orderedBy": "6aee8c853938fd0d2a5255c2",
+        "submissionDate": "2026-09-05T09:00:00.000Z",
+        "deliveredAt": "2026-11-09T04:10:31.039Z",
+        "handedAt": "2026-11-09T04:10:43.032Z"
+      }
+    ],
+    "orderlogs": [],
+    "settings": [
+      {
+        "_id": "6aee928afccfdea378678886",
+        "key": "global",
+        "orderRecipientEmail": "",
+        "smtpFromName": "Cynert Optical",
+        "smtpFromEmail": "",
+        "clinicName": "Cynert Optical",
+        "currency": "KES",
+        "allowCustomRecipient": true,
+        "notifyOnFailures": true,
+        "createdAt": "2026-11-07T02:52:58.018Z",
+        "updatedAt": "2026-11-07T02:52:58.018Z",
+        "__v": 0
+      }
+    ],
+    "auditlogs": [
+      {
+        "_id": "6af0e1d5c337e989d685265e",
+        "actor": "6aee8c853938fd0d2a5255c2",
+        "actorName": "Admin",
+        "actorEmail": "jkarranja@bitrisesolutions.co.ke",
+        "action": "db.empty",
+        "resource": "Collection",
+        "resourceId": "auditlogs",
+        "meta": {
+          "deletedCount": 2
+        },
+        "ip": "::1",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+        "status": "success",
+        "createdAt": "2026-11-08T20:55:49.023Z",
+        "updatedAt": "2026-11-08T20:55:49.023Z",
+        "__v": 0
+      },
+      {
+        "_id": "6af0e377c337e989d6852674",
+        "actor": "6aee8c853938fd0d2a5255c2",
+        "actorName": "Admin",
+        "actorEmail": "jkarranja@bitrisesolutions.co.ke",
+        "action": "patient.create",
+        "resource": "Patient",
+        "resourceId": "6af0e377c337e989d6852672",
+        "meta": {
+          "name": "DENNIS NDEGWA MAINA"
+        },
+        "ip": "::1",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+        "status": "success",
+        "createdAt": "2026-11-08T21:02:47.249Z",
+        "updatedAt": "2026-11-08T21:02:47.249Z",
+        "__v": 0
+      },
+      {
+        "_id": "6af0e383c337e989d685267d",
+        "actor": "6aee8c853938fd0d2a5255c2",
+        "actorName": "Admin",
+        "actorEmail": "jkarranja@bitrisesolutions.co.ke",
+        "action": "icd11.update",
+        "resource": "ICD11Code",
+        "resourceId": "6aeea6a9ff3545a80da66728",
+        "ip": "::1",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+        "status": "success",
+        "createdAt": "2026-11-08T21:02:59.115Z",
+        "updatedAt": "2026-11-08T21:02:59.115Z",
+        "__v": 0
+      },
+      {
+        "_id": "6af0e3fe90db75abd0b3b971",
+        "actor": "6aee8c853938fd0d2a5255c2",
+        "actorName": "Admin",
+        "actorEmail": "jkarranja@bitrisesolutions.co.ke",
+        "action": "patient.update",
+        "resource": "Patient",
+        "resourceId": "6af0e377c337e989d6852672",
+        "ip": "::1",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+        "status": "success",
+        "createdAt": "2026-11-08T21:05:02.062Z",
+        "updatedAt": "2026-11-08T21:05:02.062Z",
+        "__v": 0
+      },
+      {
+        "_id": "6af0e44490db75abd0b3b97c",
+        "actor": "6aee8c853938fd0d2a5255c2",
+        "actorName": "Admin",
+        "actorEmail": "jkarranja@bitrisesolutions.co.ke",
+        "action": "patient.mark_submitted",
+        "resource": "Patient",
+        "resourceId": "6af0e377c337e989d6852672",
+        "meta": {
+          "requested": "2026-09-05",
+          "saved": "2026-09-05T09:00:00.000Z"
+        },
+        "ip": "::1",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+        "status": "success",
+        "createdAt": "2026-11-08T21:06:12.008Z",
+        "updatedAt": "2026-11-08T21:06:12.008Z",
+        "__v": 0
+      },
+      {
+        "_id": "6af0e44b90db75abd0b3b982",
+        "actor": "6aee8c853938fd0d2a5255c2",
+        "actorName": "Admin",
+        "actorEmail": "jkarranja@bitrisesolutions.co.ke",
+        "action": "patient.status.orderDelivered",
+        "resource": "Patient",
+        "resourceId": "6af0e377c337e989d6852672",
+        "meta": {
+          "value": true
+        },
+        "ip": "::1",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+        "status": "success",
+        "createdAt": "2026-11-08T21:06:19.097Z",
+        "updatedAt": "2026-11-08T21:06:19.097Z",
+        "__v": 0
+      },
+      {
+        "_id": "6af0e44f90db75abd0b3b988",
+        "actor": "6aee8c853938fd0d2a5255c2",
+        "actorName": "Admin",
+        "actorEmail": "jkarranja@bitrisesolutions.co.ke",
+        "action": "patient.status.orderHandedToClient",
+        "resource": "Patient",
+        "resourceId": "6af0e377c337e989d6852672",
+        "meta": {
+          "value": true
+        },
+        "ip": "::1",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+        "status": "success",
+        "createdAt": "2026-11-08T21:06:23.498Z",
+        "updatedAt": "2026-11-08T21:06:23.498Z",
+        "__v": 0
+      },
+      {
+        "_id": "6af0e5dc23987f5c57067adb",
+        "actor": "6aee8c853938fd0d2a5255c2",
+        "actorName": "Admin",
+        "actorEmail": "jkarranja@bitrisesolutions.co.ke",
+        "action": "patient.create",
+        "resource": "Patient",
+        "resourceId": "6af0e5dc23987f5c57067ad9",
+        "meta": {
+          "name": "John Gicuki Wachira"
+        },
+        "ip": "::1",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+        "status": "success",
+        "createdAt": "2026-11-08T21:13:00.721Z",
+        "updatedAt": "2026-11-08T21:13:00.721Z",
+        "__v": 0
+      },
+      {
+        "_id": "6af0e5f823987f5c57067ae2",
+        "actor": "6aee8c853938fd0d2a5255c2",
+        "actorName": "Admin",
+        "actorEmail": "jkarranja@bitrisesolutions.co.ke",
+        "action": "patient.mark_submitted",
+        "resource": "Patient",
+        "resourceId": "6af0e5dc23987f5c57067ad9",
+        "meta": {
+          "requested": "2026-09-12",
+          "saved": "2026-09-12T09:00:00.000Z"
+        },
+        "ip": "::1",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+        "status": "success",
+        "createdAt": "2026-11-08T21:13:28.740Z",
+        "updatedAt": "2026-11-08T21:13:28.740Z",
+        "__v": 0
+      },
+      {
+        "_id": "6af0e60623987f5c57067ae8",
+        "actor": "6aee8c853938fd0d2a5255c2",
+        "actorName": "Admin",
+        "actorEmail": "jkarranja@bitrisesolutions.co.ke",
+        "action": "patient.status.orderDelivered",
+        "resource": "Patient",
+        "resourceId": "6af0e5dc23987f5c57067ad9",
+        "meta": {
+          "value": true
+        },
+        "ip": "::1",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+        "status": "success",
+        "createdAt": "2026-11-08T21:13:42.647Z",
+        "updatedAt": "2026-11-08T21:13:42.647Z",
+        "__v": 0
+      },
+      {
+        "_id": "6af0e63023987f5c57067aee",
+        "actor": "6aee8c853938fd0d2a5255c2",
+        "actorName": "Admin",
+        "actorEmail": "jkarranja@bitrisesolutions.co.ke",
+        "action": "patient.status.orderHandedToClient",
+        "resource": "Patient",
+        "resourceId": "6af0e5dc23987f5c57067ad9",
+        "meta": {
+          "value": true
+        },
+        "ip": "::1",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+        "status": "success",
+        "createdAt": "2026-11-08T21:14:24.831Z",
+        "updatedAt": "2026-11-08T21:14:24.831Z",
+        "__v": 0
+      },
+      {
+        "_id": "6af0e77d23987f5c57067afd",
+        "actor": "6aee8c853938fd0d2a5255c2",
+        "actorName": "Admin",
+        "actorEmail": "jkarranja@bitrisesolutions.co.ke",
+        "action": "patient.create",
+        "resource": "Patient",
+        "resourceId": "6af0e77d23987f5c57067afb",
+        "meta": {
+          "name": "Justus Fundi Njiru"
+        },
+        "ip": "::1",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+        "status": "success",
+        "createdAt": "2026-11-08T21:19:57.347Z",
+        "updatedAt": "2026-11-08T21:19:57.347Z",
+        "__v": 0
+      },
+      {
+        "_id": "6af0e79223987f5c57067b13",
+        "actor": "6aee8c853938fd0d2a5255c2",
+        "actorName": "Admin",
+        "actorEmail": "jkarranja@bitrisesolutions.co.ke",
+        "action": "patient.update",
+        "resource": "Patient",
+        "resourceId": "6af0e377c337e989d6852672",
+        "ip": "::1",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+        "status": "success",
+        "createdAt": "2026-11-08T21:20:18.125Z",
+        "updatedAt": "2026-11-08T21:20:18.125Z",
+        "__v": 0
+      },
+      {
+        "_id": "6af0e7a723987f5c57067b1a",
+        "actor": "6aee8c853938fd0d2a5255c2",
+        "actorName": "Admin",
+        "actorEmail": "jkarranja@bitrisesolutions.co.ke",
+        "action": "patient.mark_submitted",
+        "resource": "Patient",
+        "resourceId": "6af0e77d23987f5c57067afb",
+        "meta": {
+          "requested": "2026-09-05",
+          "saved": "2026-09-05T09:00:00.000Z"
+        },
+        "ip": "::1",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+        "status": "success",
+        "createdAt": "2026-11-08T21:20:39.845Z",
+        "updatedAt": "2026-11-08T21:20:39.845Z",
+        "__v": 0
+      },
+      {
+        "_id": "6af0e7ad23987f5c57067b20",
+        "actor": "6aee8c853938fd0d2a5255c2",
+        "actorName": "Admin",
+        "actorEmail": "jkarranja@bitrisesolutions.co.ke",
+        "action": "patient.status.orderDelivered",
+        "resource": "Patient",
+        "resourceId": "6af0e77d23987f5c57067afb",
+        "meta": {
+          "value": true
+        },
+        "ip": "::1",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+        "status": "success",
+        "createdAt": "2026-11-08T21:20:45.043Z",
+        "updatedAt": "2026-11-08T21:20:45.043Z",
+        "__v": 0
+      },
+      {
+        "_id": "6af0e7b023987f5c57067b26",
+        "actor": "6aee8c853938fd0d2a5255c2",
+        "actorName": "Admin",
+        "actorEmail": "jkarranja@bitrisesolutions.co.ke",
+        "action": "patient.status.orderHandedToClient",
+        "resource": "Patient",
+        "resourceId": "6af0e77d23987f5c57067afb",
+        "meta": {
+          "value": true
+        },
+        "ip": "::1",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+        "status": "success",
+        "createdAt": "2026-11-08T21:20:48.604Z",
+        "updatedAt": "2026-11-08T21:20:48.604Z",
+        "__v": 0
+      },
+      {
+        "_id": "6af0e9ff23987f5c57067b39",
+        "actor": "6aee8c853938fd0d2a5255c2",
+        "actorName": "Admin",
+        "actorEmail": "jkarranja@bitrisesolutions.co.ke",
+        "action": "patient.create",
+        "resource": "Patient",
+        "resourceId": "6af0e9fe23987f5c57067b37",
+        "meta": {
+          "name": "Awuor Everline Ochieng"
+        },
+        "ip": "::1",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+        "status": "success",
+        "createdAt": "2026-11-08T21:30:39.153Z",
+        "updatedAt": "2026-11-08T21:30:39.153Z",
+        "__v": 0
+      },
+      {
+        "_id": "6af0ea1523987f5c57067b40",
+        "actor": "6aee8c853938fd0d2a5255c2",
+        "actorName": "Admin",
+        "actorEmail": "jkarranja@bitrisesolutions.co.ke",
+        "action": "patient.mark_submitted",
+        "resource": "Patient",
+        "resourceId": "6af0e9fe23987f5c57067b37",
+        "meta": {
+          "requested": "2026-09-05",
+          "saved": "2026-09-05T09:00:00.000Z"
+        },
+        "ip": "::1",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+        "status": "success",
+        "createdAt": "2026-11-08T21:31:01.945Z",
+        "updatedAt": "2026-11-08T21:31:01.945Z",
+        "__v": 0
+      },
+      {
+        "_id": "6af0ea1b23987f5c57067b46",
+        "actor": "6aee8c853938fd0d2a5255c2",
+        "actorName": "Admin",
+        "actorEmail": "jkarranja@bitrisesolutions.co.ke",
+        "action": "patient.status.orderDelivered",
+        "resource": "Patient",
+        "resourceId": "6af0e9fe23987f5c57067b37",
+        "meta": {
+          "value": true
+        },
+        "ip": "::1",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+        "status": "success",
+        "createdAt": "2026-11-08T21:31:07.202Z",
+        "updatedAt": "2026-11-08T21:31:07.202Z",
+        "__v": 0
+      },
+      {
+        "_id": "6af10e594d98d757995d3c8b",
+        "actor": "6aee8c853938fd0d2a5255c2",
+        "actorName": "Admin",
+        "actorEmail": "jkarranja@bitrisesolutions.co.ke",
+        "action": "patient.document.upload",
+        "resource": "Patient",
+        "resourceId": "6af0e9fe23987f5c57067b37",
+        "meta": {
+          "kind": "prescription",
+          "filename": "prescription.pdf",
+          "size": 122125
+        },
+        "ip": "::1",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+        "status": "success",
+        "createdAt": "2026-11-09T00:05:45.496Z",
+        "updatedAt": "2026-11-09T00:05:45.496Z",
+        "__v": 0
+      },
+      {
+        "_id": "6af10e614d98d757995d3c92",
+        "actor": "6aee8c853938fd0d2a5255c2",
+        "actorName": "Admin",
+        "actorEmail": "jkarranja@bitrisesolutions.co.ke",
+        "action": "patient.document.upload",
+        "resource": "Patient",
+        "resourceId": "6af0e9fe23987f5c57067b37",
+        "meta": {
+          "kind": "diagnostic",
+          "filename": "diagnostic.pdf",
+          "size": 330422
+        },
+        "ip": "::1",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+        "status": "success",
+        "createdAt": "2026-11-09T00:05:53.395Z",
+        "updatedAt": "2026-11-09T00:05:53.395Z",
+        "__v": 0
+      },
+      {
+        "_id": "6af110fa52efb63352567dd3",
+        "actor": "6aee8c853938fd0d2a5255c2",
+        "actorName": "Admin",
+        "actorEmail": "jkarranja@bitrisesolutions.co.ke",
+        "action": "auth.login",
+        "resource": "User",
+        "resourceId": "6aee8c853938fd0d2a5255c2",
+        "ip": null,
+        "userAgent": null,
+        "status": "success",
+        "createdAt": "2026-11-09T00:16:58.105Z",
+        "updatedAt": "2026-11-09T00:16:58.105Z",
+        "__v": 0
+      },
+      {
+        "_id": "6af112ae52efb63352567df1",
+        "actor": "6aee8c853938fd0d2a5255c2",
+        "actorName": "Admin",
+        "actorEmail": "jkarranja@bitrisesolutions.co.ke",
+        "action": "auth.login",
+        "resource": "User",
+        "resourceId": "6aee8c853938fd0d2a5255c2",
+        "ip": null,
+        "userAgent": null,
+        "status": "success",
+        "createdAt": "2026-11-09T00:24:14.756Z",
+        "updatedAt": "2026-11-09T00:24:14.756Z",
+        "__v": 0
+      },
+      {
+        "_id": "6af1443e52efb63352567e2e",
+        "actor": "6aee8c853938fd0d2a5255c2",
+        "actorName": "Admin",
+        "actorEmail": "jkarranja@bitrisesolutions.co.ke",
+        "action": "patient.create",
+        "resource": "Patient",
+        "resourceId": "6af1443e52efb63352567e2c",
+        "meta": {
+          "name": "John Murithi Mati"
+        },
+        "ip": "::1",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+        "status": "success",
+        "createdAt": "2026-11-09T03:55:42.630Z",
+        "updatedAt": "2026-11-09T03:55:42.630Z",
+        "__v": 0
+      },
+      {
+        "_id": "6af147af3b0884d9da46b0da",
+        "actor": "6aee8c853938fd0d2a5255c2",
+        "actorName": "Admin",
+        "actorEmail": "jkarranja@bitrisesolutions.co.ke",
+        "action": "patient.mark_submitted",
+        "resource": "Patient",
+        "resourceId": "6af1443e52efb63352567e2c",
+        "meta": {
+          "requested": "2026-09-05",
+          "saved": "2026-09-05T09:00:00.000Z"
+        },
+        "ip": "::1",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+        "status": "success",
+        "createdAt": "2026-11-09T04:10:23.999Z",
+        "updatedAt": "2026-11-09T04:10:23.999Z",
+        "__v": 0
+      },
+      {
+        "_id": "6af147b73b0884d9da46b0e0",
+        "actor": "6aee8c853938fd0d2a5255c2",
+        "actorName": "Admin",
+        "actorEmail": "jkarranja@bitrisesolutions.co.ke",
+        "action": "patient.status.orderDelivered",
+        "resource": "Patient",
+        "resourceId": "6af1443e52efb63352567e2c",
+        "meta": {
+          "value": true
+        },
+        "ip": "::1",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+        "status": "success",
+        "createdAt": "2026-11-09T04:10:31.376Z",
+        "updatedAt": "2026-11-09T04:10:31.376Z",
+        "__v": 0
+      },
+      {
+        "_id": "6af147c33b0884d9da46b0e6",
+        "actor": "6aee8c853938fd0d2a5255c2",
+        "actorName": "Admin",
+        "actorEmail": "jkarranja@bitrisesolutions.co.ke",
+        "action": "patient.status.orderHandedToClient",
+        "resource": "Patient",
+        "resourceId": "6af1443e52efb63352567e2c",
+        "meta": {
+          "value": true
+        },
+        "ip": "::1",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+        "status": "success",
+        "createdAt": "2026-11-09T04:10:43.054Z",
+        "updatedAt": "2026-11-09T04:10:43.054Z",
+        "__v": 0
+      },
+      {
+        "_id": "6af14985600dcd1ff90af81b",
+        "actor": "6aee8c853938fd0d2a5255c2",
+        "actorName": "Admin",
+        "actorEmail": "jkarranja@bitrisesolutions.co.ke",
+        "action": "lenstype.update",
+        "resource": "LensType",
+        "resourceId": "6af1493573bc102b3589f87a",
+        "ip": "::1",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+        "status": "success",
+        "createdAt": "2026-11-09T04:18:13.377Z",
+        "updatedAt": "2026-11-09T04:18:13.377Z",
+        "__v": 0
+      },
+      {
+        "_id": "6af149c3600dcd1ff90af823",
+        "actor": "6aee8c853938fd0d2a5255c2",
+        "actorName": "Admin",
+        "actorEmail": "jkarranja@bitrisesolutions.co.ke",
+        "action": "lenstype.update",
+        "resource": "LensType",
+        "resourceId": "6af1493573bc102b3589f87a",
+        "ip": "::1",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+        "status": "success",
+        "createdAt": "2026-11-09T04:19:15.795Z",
+        "updatedAt": "2026-11-09T04:19:15.795Z",
+        "__v": 0
+      },
+      {
+        "_id": "6af14b4549892745f67da7d1",
+        "actor": "6aee8c853938fd0d2a5255c2",
+        "actorName": "Admin",
+        "actorEmail": "jkarranja@bitrisesolutions.co.ke",
+        "action": "lenstype.update",
+        "resource": "LensType",
+        "resourceId": "6af1493573bc102b3589f87c",
+        "ip": "::1",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+        "status": "success",
+        "createdAt": "2026-11-09T04:25:41.271Z",
+        "updatedAt": "2026-11-09T04:25:41.271Z",
+        "__v": 0
+      }
+    ],
+    "icd11codes": [
+      {
+        "_id": "6aeea6a9ff3545a80da66720",
+        "code": "9D90",
+        "__v": 0,
+        "createdAt": "2026-11-07T04:18:49.799Z",
+        "description": "Mild distance vision impairment",
+        "updatedAt": "2026-11-07T04:18:49.799Z"
+      },
+      {
+        "_id": "6aeea6a9ff3545a80da66721",
+        "code": "9D91",
+        "__v": 0,
+        "createdAt": "2026-11-07T04:18:49.835Z",
+        "description": "Moderate distance vision impairment",
+        "updatedAt": "2026-11-07T04:18:49.835Z"
+      },
+      {
+        "_id": "6aeea6a9ff3545a80da66722",
+        "code": "9D92",
+        "__v": 0,
+        "createdAt": "2026-11-07T04:18:49.839Z",
+        "description": "Severe distance vision impairment",
+        "updatedAt": "2026-11-07T04:18:49.839Z"
+      },
+      {
+        "_id": "6aeea6a9ff3545a80da66723",
+        "code": "9D93",
+        "__v": 0,
+        "createdAt": "2026-11-07T04:18:49.844Z",
+        "description": "Blindness",
+        "updatedAt": "2026-11-07T04:18:49.844Z"
+      },
+      {
+        "_id": "6aeea6a9ff3545a80da66724",
+        "code": "9B76",
+        "__v": 0,
+        "createdAt": "2026-11-07T04:18:49.848Z",
+        "description": "Myopia",
+        "updatedAt": "2026-11-07T04:18:49.848Z"
+      },
+      {
+        "_id": "6aeea6a9ff3545a80da66725",
+        "code": "9D45",
+        "__v": 0,
+        "createdAt": "2026-11-07T04:18:49.852Z",
+        "description": "Photophobia",
+        "updatedAt": "2026-11-07T04:18:49.852Z"
+      },
+      {
+        "_id": "6aeea6a9ff3545a80da66726",
+        "code": "9C61",
+        "__v": 0,
+        "createdAt": "2026-11-07T04:18:49.856Z",
+        "description": "Hypermetropia",
+        "updatedAt": "2026-11-07T04:18:49.856Z"
+      },
+      {
+        "_id": "6aeea6a9ff3545a80da66727",
+        "code": "9C62",
+        "__v": 0,
+        "createdAt": "2026-11-07T04:18:49.860Z",
+        "description": "Astigmatism",
+        "updatedAt": "2026-11-07T04:18:49.860Z"
+      },
+      {
+        "_id": "6aeea6a9ff3545a80da66728",
+        "code": "9C63",
+        "__v": 0,
+        "createdAt": "2026-11-07T04:18:49.863Z",
+        "description": "Presbyopia",
+        "updatedAt": "2026-11-07T04:18:49.863Z"
+      },
+      {
+        "_id": "6aeea6a9ff3545a80da66729",
+        "code": "9C64",
+        "__v": 0,
+        "createdAt": "2026-11-07T04:18:49.867Z",
+        "description": "Anisometropia",
+        "updatedAt": "2026-11-07T04:18:49.867Z"
+      },
+      {
+        "_id": "6aeea6a9ff3545a80da6672a",
+        "code": "9B70",
+        "__v": 0,
+        "createdAt": "2026-11-07T04:18:49.870Z",
+        "description": "Glaucoma",
+        "updatedAt": "2026-11-07T04:18:49.870Z"
+      },
+      {
+        "_id": "6aeea6a9ff3545a80da6672b",
+        "code": "9B71",
+        "__v": 0,
+        "createdAt": "2026-11-07T04:18:49.872Z",
+        "description": "Cataract",
+        "updatedAt": "2026-11-07T04:18:49.872Z"
+      },
+      {
+        "_id": "6aeea6a9ff3545a80da6672c",
+        "code": "9A10",
+        "__v": 0,
+        "createdAt": "2026-11-07T04:18:49.875Z",
+        "description": "Conjunctivitis",
+        "updatedAt": "2026-11-07T04:18:49.875Z"
+      },
+      {
+        "_id": "6aeea6a9ff3545a80da6672d",
+        "code": "9A60",
+        "__v": 0,
+        "createdAt": "2026-11-07T04:18:49.877Z",
+        "description": "Dry eye disease",
+        "updatedAt": "2026-11-07T04:18:49.877Z"
+      },
+      {
+        "_id": "6aeea6a9ff3545a80da6672e",
+        "code": "9B10",
+        "__v": 0,
+        "createdAt": "2026-11-07T04:18:49.880Z",
+        "description": "Keratitis",
+        "updatedAt": "2026-11-07T04:18:49.880Z"
+      },
+      {
+        "_id": "6aeea6a9ff3545a80da6672f",
+        "code": "9B20",
+        "__v": 0,
+        "createdAt": "2026-11-07T04:18:49.882Z",
+        "description": "Corneal ulcer",
+        "updatedAt": "2026-11-07T04:18:49.882Z"
+      },
+      {
+        "_id": "6aeea6a9ff3545a80da66730",
+        "code": "9C10",
+        "__v": 0,
+        "createdAt": "2026-11-07T04:18:49.885Z",
+        "description": "Retinal detachment",
+        "updatedAt": "2026-11-07T04:18:49.885Z"
+      },
+      {
+        "_id": "6aeea6a9ff3545a80da66731",
+        "code": "9C20",
+        "__v": 0,
+        "createdAt": "2026-11-07T04:18:49.887Z",
+        "description": "Diabetic retinopathy",
+        "updatedAt": "2026-11-07T04:18:49.887Z"
+      },
+      {
+        "_id": "6aeea6a9ff3545a80da66732",
+        "code": "9C30",
+        "__v": 0,
+        "createdAt": "2026-11-07T04:18:49.889Z",
+        "description": "Age-related macular degeneration",
+        "updatedAt": "2026-11-07T04:18:49.889Z"
+      },
+      {
+        "_id": "6aeea6a9ff3545a80da66733",
+        "code": "9C40",
+        "__v": 0,
+        "createdAt": "2026-11-07T04:18:49.892Z",
+        "description": "Amblyopia",
+        "updatedAt": "2026-11-07T04:18:49.892Z"
+      },
+      {
+        "_id": "6aeea6a9ff3545a80da66734",
+        "code": "9C50",
+        "__v": 0,
+        "createdAt": "2026-11-07T04:18:49.894Z",
+        "description": "Strabismus",
+        "updatedAt": "2026-11-07T04:18:49.894Z"
+      },
+      {
+        "_id": "6af0e3c8dd2a5734048f73f7",
+        "code": "9D00.3",
+        "description": "Presbyopia",
+        "createdAt": "2026-11-08T21:04:08.228Z",
+        "updatedAt": "2026-11-08T21:04:08.228Z",
+        "__v": 0
+      },
+      {
+        "_id": "6af0e4cb02fb0820e2dbcc41",
+        "code": "9A06.1",
+        "description": "Dry Eye Syndrome",
+        "createdAt": "2026-11-08T21:08:27.986Z",
+        "updatedAt": "2026-11-08T21:08:27.986Z",
+        "__v": 0
+      }
+    ],
+    "insurances": [
+      {
+        "_id": "6af0244aaa7561d0bd72d4cb",
+        "name": "Social Health Fund (SHIF)",
+        "active": true,
+        "createdAt": "2026-11-08T07:27:06.014Z",
+        "updatedAt": "2026-11-08T07:27:06.014Z",
+        "__v": 0
+      },
+      {
+        "_id": "6af0244aaa7561d0bd72d4ce",
+        "name": "SHA Mwalimu Medical Cover",
+        "active": true,
+        "createdAt": "2026-11-08T07:27:06.026Z",
+        "updatedAt": "2026-11-08T07:27:06.026Z",
+        "__v": 0
+      },
+      {
+        "_id": "6af0244aaa7561d0bd72d4d1",
+        "name": "SHA Usalama Medical Cover",
+        "active": true,
+        "createdAt": "2026-11-08T07:27:06.032Z",
+        "updatedAt": "2026-11-08T07:27:06.032Z",
+        "__v": 0
+      },
+      {
+        "_id": "6af0244aaa7561d0bd72d4d4",
+        "name": "SHA Public Officer Medical Cover",
+        "active": true,
+        "createdAt": "2026-11-08T07:27:06.039Z",
+        "updatedAt": "2026-11-08T07:27:06.039Z",
+        "__v": 0
+      },
+      {
+        "_id": "6af0244aaa7561d0bd72d4d7",
+        "name": "University of Embu",
+        "active": true,
+        "createdAt": "2026-11-08T07:27:06.044Z",
+        "updatedAt": "2026-11-08T07:27:06.044Z",
+        "__v": 0
+      }
+    ],
+    "customrecipients": [
+      {
+        "_id": "6af0311f02f309fc82b10ea0",
+        "name": "Cynert Claims Mail",
+        "email": "claims@cynerthospitalandrehab.org",
+        "label": "Cynert Mail",
+        "active": true,
+        "createdAt": "2026-11-08T08:21:51.502Z",
+        "updatedAt": "2026-11-08T08:21:51.502Z",
+        "__v": 0
+      },
+      {
+        "_id": "6af0311f02f309fc82b10ea2",
+        "name": "MJK Captain",
+        "email": "jkarranja@gmail.com",
+        "label": "Captain Mail",
+        "active": true,
+        "createdAt": "2026-11-08T08:21:51.524Z",
+        "updatedAt": "2026-11-08T08:21:51.524Z",
+        "__v": 0
+      },
+      {
+        "_id": "6af0311f02f309fc82b10ea4",
+        "name": "Finance",
+        "email": "cynerthospital@gmail.com",
+        "label": "Cynert Finance",
+        "active": true,
+        "createdAt": "2026-11-08T08:21:51.528Z",
+        "updatedAt": "2026-11-08T08:21:51.528Z",
+        "__v": 0
+      }
+    ]
+  }
+}
