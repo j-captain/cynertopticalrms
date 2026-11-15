@@ -1,36 +1,27 @@
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import { env } from '../config/env.js';
 
-let transporter = null;
+// Initialize Resend client (lazy-loaded so missing key doesn't crash at import)
+let resend = null;
 
-const getTransporter = () => {
-  if (transporter) return transporter;
+const getResend = () => {
+  if (resend) return resend;
 
-  if (!env.SMTP_HOST || !env.SMTP_USER) {
-    console.warn('⚠️  SMTP not configured. Emails will not be delivered.');
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.warn('⚠️  RESEND_API_KEY not configured. Emails will not be delivered.');
     return null;
   }
 
-  transporter = nodemailer.createTransport({
-    host: env.SMTP_HOST,
-    port: env.SMTP_PORT,
-    secure: env.SMTP_PORT === 465,
-    requireTLS: env.SMTP_PORT === 587,
-    auth: { user: env.SMTP_USER, pass: env.SMTP_PASS },
-  });
+  resend = new Resend(apiKey);
+  console.log('✅ Resend client ready');
+  return resend;
+};
 
-  transporter.verify((err) => {
-    if (err) {
-      console.error('❌ SMTP verification failed:', err.message);
-      if (err.message.includes('535')) {
-        console.error('   → 535 = wrong password OR SMTP_FROM email ≠ SMTP_USER email.');
-      }
-    } else {
-      console.log('✅ SMTP ready');
-    }
-  });
-
-  return transporter;
+// Default sender. MUST be changed to your verified domain for production
+// (resend.dev only allows sending to your own account email).
+const getFromAddress = () => {
+  return process.env.RESEND_FROM || 'Cynert Optical <onboarding@resend.dev>';
 };
 
 const formatMoney = (n) =>
@@ -169,15 +160,25 @@ export const buildMiniOrderEmail = (patient) => {
 };
 
 export const sendOrderEmail = async ({ to, patient, mode = 'full' }) => {
-  const t = getTransporter();
+  const client = getResend();
   const builder = mode === 'mini' ? buildMiniOrderEmail : buildOrderEmail;
   const { html, subject } = builder(patient);
-  if (!t) {
+  if (!client) {
     console.log(`📧 [DEV] Email (${mode}) to`, to);
     console.log(subject);
     return { simulated: true };
   }
-  return t.sendMail({ from: env.SMTP_FROM, to, subject, html });
+  const { data, error } = await client.emails.send({
+    from: getFromAddress(),
+    to,
+    subject,
+    html,
+  });
+  if (error) {
+    console.error('❌ Resend error:', error);
+    throw new Error(error.message);
+  }
+  return data;
 };
 
 /* ────────────────────────────────────────────────────────────────── */
@@ -268,14 +269,24 @@ export const buildActivationEmail = ({ name, code, ttlMinutes, isNewAccount }) =
   renderActivationEmail({ name, code, ttlMinutes, isNewAccount });
 
 export const sendActivationEmail = async ({ to, name, code, ttlMinutes, isNewAccount }) => {
-  const t = getTransporter();
+  const client = getResend();
   const { html, subject } = renderActivationEmail({ name, code, ttlMinutes, isNewAccount });
-  if (!t) {
+  if (!client) {
     console.log(`📧 [DEV] Activation email to ${to}`);
     if (code) console.log(`   Code: ${code}`);
     return { simulated: true };
   }
-  return t.sendMail({ from: env.SMTP_FROM, to, subject, html });
+  const { data, error } = await client.emails.send({
+    from: getFromAddress(),
+    to,
+    subject,
+    html,
+  });
+  if (error) {
+    console.error('❌ Resend error:', error);
+    throw new Error(error.message);
+  }
+  return data;
 };
 
 /* ────────────────────────────────────────────────────────────────── */
@@ -358,14 +369,24 @@ export const buildPasswordResetEmail = ({ name, code, ttlMinutes }) =>
   renderPasswordResetEmail({ name, code, ttlMinutes });
 
 export const sendPasswordResetEmail = async ({ to, name, code, ttlMinutes }) => {
-  const t = getTransporter();
+  const client = getResend();
   const { html, subject } = renderPasswordResetEmail({ name, code, ttlMinutes });
-  if (!t) {
+  if (!client) {
     console.log(`📧 [DEV] Password reset email to ${to}`);
     if (code) console.log(`   Code: ${code}`);
     return { simulated: true };
   }
-  return t.sendMail({ from: env.SMTP_FROM, to, subject, html });
+  const { data, error } = await client.emails.send({
+    from: getFromAddress(),
+    to,
+    subject,
+    html,
+  });
+  if (error) {
+    console.error('❌ Resend error:', error);
+    throw new Error(error.message);
+  }
+  return data;
 };
 
 /* ────────────────────────────────────────────────────────────────── */
@@ -437,13 +458,23 @@ export const buildAccountActivatedEmail = ({ name, email }) =>
   renderAccountActivatedEmail({ name, email });
 
 export const sendAccountActivatedEmail = async ({ to, name, email }) => {
-  const t = getTransporter();
+  const client = getResend();
   const { html, subject } = renderAccountActivatedEmail({ name, email });
-  if (!t) {
+  if (!client) {
     console.log(`📧 [DEV] Account activated email to ${to}`);
     return { simulated: true };
   }
-  return t.sendMail({ from: env.SMTP_FROM, to, subject, html });
+  const { data, error } = await client.emails.send({
+    from: getFromAddress(),
+    to,
+    subject,
+    html,
+  });
+  if (error) {
+    console.error('❌ Resend error:', error);
+    throw new Error(error.message);
+  }
+  return data;
 };
 
 
@@ -517,13 +548,23 @@ const renderNewOrderForOptician = ({ patient, staffName }) => {
 };
 
 export const sendNewOrderToOptician = async ({ to, patient, staffName }) => {
-  const t = getTransporter();
+  const client = getResend();
   const { html, subject } = renderNewOrderForOptician({ patient, staffName });
-  if (!t) {
+  if (!client) {
     console.log(`📧 [DEV] New-order email to optician ${to}`);
     return { simulated: true };
   }
-  return t.sendMail({ from: env.SMTP_FROM, to, subject, html });
+  const { data, error } = await client.emails.send({
+    from: getFromAddress(),
+    to,
+    subject,
+    html,
+  });
+  if (error) {
+    console.error('❌ Resend error:', error);
+    throw new Error(error.message);
+  }
+  return data;
 };
 
 /* ────────────────────────────────────────────────────────────────── */
@@ -600,11 +641,21 @@ const renderBillForDirector = ({ patient, opticianName }) => {
 };
 
 export const sendBillToDirector = async ({ to, patient, opticianName }) => {
-  const t = getTransporter();
+  const client = getResend();
   const { html, subject } = renderBillForDirector({ patient, opticianName });
-  if (!t) {
+  if (!client) {
     console.log(`📧 [DEV] New-bill email to director ${to}`);
     return { simulated: true };
   }
-  return t.sendMail({ from: env.SMTP_FROM, to, subject, html });
+  const { data, error } = await client.emails.send({
+    from: getFromAddress(),
+    to,
+    subject,
+    html,
+  });
+  if (error) {
+    console.error('❌ Resend error:', error);
+    throw new Error(error.message);
+  }
+  return data;
 };
