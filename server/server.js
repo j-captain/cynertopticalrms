@@ -145,7 +145,7 @@ app.use(notFound);
 app.use(errorHandler);
 
 // ───────────────────────────────────────────────────────────────
-// 11. Boot — listen FIRST, then connect to DB.
+// 11. Boot - listen FIRST, then connect to DB.
 //     Render requires an open port within its scan window, so
 //     binding must not wait on Mongo or admin bootstrap.
 // ───────────────────────────────────────────────────────────────
@@ -158,7 +158,7 @@ const server = app.listen(PORT, '0.0.0.0', () => {
   );
   console.log(`   CLIENT_URL: ${env.CLIENT_URL}`);
   if (env.hasMissingRequired) {
-    console.log('   ⚠️  Some required env vars are missing — DB routes will fail.');
+    console.log('   ⚠️  Some required env vars are missing - DB routes will fail.');
   }
 });
 
@@ -170,7 +170,7 @@ connectDB()
   })
   .then(() => console.log('✅ Admin bootstrap complete'))
   .catch((err) => {
-    // Do NOT exit — keep the process alive so Render's logs show the real error.
+    // Do NOT exit - keep the process alive so Render's logs show the real error.
     console.error('❌ Startup error:', err.message);
     if (err.message?.includes('ECONNREFUSED') || err.message?.includes('127.0.0.1')) {
       console.error(

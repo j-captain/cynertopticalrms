@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 // ───────────────────────────────────────────────────────────────
-// Required var check — non-fatal on purpose.
+// Required var check - non-fatal on purpose.
 // Render needs an open port within its scan window; if we
 // process.exit(1) here before app.listen, the deploy fails with
 // "No open ports detected" and the real error is hidden.
