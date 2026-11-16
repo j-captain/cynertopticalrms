@@ -2,15 +2,18 @@ import { Router } from 'express';
 import { protect } from '../middleware/auth.js';
 import {
   pendingOrders,
+  opticianBilledOrders,
   allOrdersForOptician,
   opticianSummary,
   submitBill,
-  deliverOrder,
-  opticianBilledOrders,
   opticianEditBill,
-  directorOrders,
+  deliverOrder,
+  completeBilling,
+  listBatches,
+  cancelBatch,
+  directorBatches,
+  markBatchPaid,
   directorSummary,
-  markPaid,
   adminBillingOverview,
   adminBillingSummary,
   adminBillOrder,
@@ -19,28 +22,37 @@ import {
   adminDeliver,
   adminRevertToPending,
   adminRevertToBilled,
+  adminListBatches,
+  adminBatchAction,
 } from '../controllers/billingController.js';
 
 const router = Router();
 router.use(protect);
 
-/* Optician */
+/* Optician - specific before :id */
 router.get('/optician/pending', pendingOrders);
 router.get('/optician/billed', opticianBilledOrders);
 router.get('/optician/all', allOrdersForOptician);
 router.get('/optician/summary', opticianSummary);
+router.post('/optician/complete-billing', completeBilling);
 router.post('/optician/:id/bill', submitBill);
 router.post('/optician/:id/deliver', deliverOrder);
 router.put('/optician/:id/edit-bill', opticianEditBill);
 
-/* Director */
-router.get('/director/orders', directorOrders);
+/* Batches - shared */
+router.get('/batches', listBatches);
+router.post('/batches/:id/cancel', cancelBatch);
+
+/* Director - batches, not orders */
+router.get('/director/batches', directorBatches);
+router.post('/director/batches/:id/paid', markBatchPaid);
 router.get('/director/summary', directorSummary);
-router.post('/director/:id/paid', markPaid);
 
 /* Admin */
 router.get('/admin/overview', adminBillingOverview);
 router.get('/admin/summary', adminBillingSummary);
+router.get('/admin/batches', adminListBatches);
+router.post('/admin/batches/:id/action', adminBatchAction);
 router.post('/admin/:id/bill', adminBillOrder);
 router.post('/admin/:id/edit-bill', adminEditBill);
 router.post('/admin/:id/paid', adminMarkPaid);

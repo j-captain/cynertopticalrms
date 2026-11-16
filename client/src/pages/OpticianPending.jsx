@@ -107,20 +107,20 @@ const OpticianPending = () => {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState('');
-  const [target, setTarget] = useState(null);
-  const [form, setForm] = useState({ lenses: '', frame: '', fitting: '', caseAmount: '', fargo: '' });
-  const [saving, setSaving] = useState(false);
-  const [successOpen, setSuccessOpen] = useState(false);
-  const [successMsg, setSuccessMsg] = useState('');
+  const [detail, setDetail] = useState(null);
 
-  /* ── New: gate + confirm ── */
+  /* ── Bill: gate → form → confirm ── */
   const [gateTarget, setGateTarget] = useState(null);
+  const [target, setTarget] = useState(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmTarget, setConfirmTarget] = useState(null);
+  // NOTE: fargo removed from this form - it lives in the fargo batch flow now
+  const [form, setForm] = useState({ lenses: '', frame: '', fitting: '', caseAmount: '' });
+  const [saving, setSaving] = useState(false);
 
-  // Each detail has a unique `id` per open, so AnimatePresence sees a
-  // real mount → exit → remount cycle every time.
-  const [detail, setDetail] = useState(null); // { id, patient, anchorRect }
+  /* ── Success ── */
+  const [successOpen, setSuccessOpen] = useState(false);
+  const [successMsg, setSuccessMsg] = useState('');
 
   const load = async () => {
     setLoading(true);
@@ -149,11 +149,15 @@ const OpticianPending = () => {
   const proceedToBillForm = () => {
     if (!gateTarget) return;
     setTarget(gateTarget);
-    setForm({ lenses: '', frame: '', fitting: '', caseAmount: '', fargo: '' });
+    setForm({ lenses: '', frame: '', fitting: '', caseAmount: '' });
     setGateTarget(null);
   };
 
   /* ──────────────── BILL - FORM ──────────────── */
+  const closeForm = () => {
+    if (!saving) setTarget(null);
+  };
+
   const total = Object.values(form).reduce((s, v) => s + (Number(v) || 0), 0);
 
   const proceedToConfirm = () => {
@@ -168,7 +172,7 @@ const OpticianPending = () => {
     setSaving(true);
     try {
       await api.post(`/billing/optician/${confirmTarget._id}/bill`, form);
-      setSuccessMsg(`Bill of ${money(total)} submitted for ${confirmTarget.patientName}.`);
+      setSuccessMsg(`Billing completed for ${confirmTarget.patientName}. Click "Complete Billing" on Billed Orders to push to the director.`);
       setConfirmOpen(false);
       setConfirmTarget(null);
       setSuccessOpen(true);
@@ -180,15 +184,12 @@ const OpticianPending = () => {
     }
   };
 
-  /* Open the popover anchored to the clicked CELL, below it */
+  /* ─── Row click opens the detail popover ─── */
   const openDetail = useCallback((p, trEl, cellEl) => {
     const rect = cellEl.getBoundingClientRect();
     setDetail((cur) => {
-      // Toggle: clicking the same patient closes
       if (cur && cur.patient._id === p._id) return null;
       return {
-        // Unique id per open - forces AnimatePresence to run the
-        // enter/exit cycle on every click, so the animation is always seen
         id: `${p._id}-${Date.now()}`,
         patient: p,
         anchorRect: {
@@ -306,7 +307,6 @@ const OpticianPending = () => {
         </div>
       </div>
 
-      {/* Key changes with every open → guaranteed animation */}
       <AnimatePresence mode="wait">
         {detail && (
           <RowDetail
@@ -334,7 +334,7 @@ const OpticianPending = () => {
               Enter a bill for <span className="font-semibold">{gateTarget?.patientName}</span>?
             </p>
             <p className="text-xs text-slate-500 mt-1">
-              You'll be able to enter the lenses, frame, fitting, case, and fargo amounts on the next step.
+              You'll be able to enter the lenses, frame, fitting, and case amounts on the next step. Fargo is added separately in a batch.
             </p>
           </div>
           <div className="rounded-xl bg-slate-50 p-3 text-xs space-y-1">
@@ -368,8 +368,8 @@ const OpticianPending = () => {
         </div>
       </Modal>
 
-      {/* ─────────── BILL - FORM (unchanged except submit label + handler) ─────────── */}
-      <Modal open={!!target} onClose={() => !saving && setTarget(null)} title="Enter Bill" width="max-w-lg">
+      {/* ─────────── BILL - FORM ─────────── */}
+      <Modal open={!!target} onClose={closeForm} title="Enter Bill" width="max-w-lg">
         <div className="space-y-3">
           <div className="rounded-xl bg-slate-50 p-3 text-xs space-y-1">
             <div className="flex justify-between">
@@ -383,26 +383,6 @@ const OpticianPending = () => {
             <div className="flex justify-between">
               <span className="text-slate-500">Frame Code</span>
               <span className="font-semibold text-slate-800">{target?.frameCode || '-'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-slate-500">Scheme</span>
-              <span className="font-semibold text-slate-800">
-                {target?.scheme === 'Insurance' ? 'Insurance' : 'Cash'}
-              </span>
-            </div>
-            {target?.scheme === 'Insurance' && (
-              <div className="flex justify-between">
-                <span className="text-slate-500">Insurance</span>
-                <span className="font-semibold text-slate-800">{target?.insurance || '-'}</span>
-              </div>
-            )}
-            <div className="flex justify-between">
-              <span className="text-slate-500">Submitted</span>
-              <span className="font-semibold text-slate-800">
-                {target?.submissionDate || target?.orderedAt
-                  ? fmtDate(target.submissionDate || target.orderedAt)
-                  : '-'}
-              </span>
             </div>
           </div>
 
@@ -439,22 +419,18 @@ const OpticianPending = () => {
                 onChange={(e) => setForm({ ...form, caseAmount: e.target.value })}
               />
             </div>
-            <div>
-              <label className="label">Fargo (KES)</label>
-              <input
-                type="number" min="0" className="input"
-                value={form.fargo}
-                onChange={(e) => setForm({ ...form, fargo: e.target.value })}
-              />
-            </div>
-            <div>
+            <div className="col-span-2">
               <label className="label">Total (auto)</label>
               <div className="input !bg-slate-50 !text-slate-700 font-semibold">{money(total)}</div>
             </div>
           </div>
 
+          <p className="text-[11px] text-slate-400 leading-relaxed">
+            Fargo is <strong>not</strong> entered per-order. After billing, submit a fargo batch from <em>Billed Orders</em> to charge the delivery fee for a group of orders.
+          </p>
+
           <div className="flex justify-end gap-2 pt-1">
-            <button className="btn-ghost" onClick={() => setTarget(null)} disabled={saving}>Cancel</button>
+            <button className="btn-ghost" onClick={closeForm} disabled={saving}>Cancel</button>
             <button className="btn-primary" onClick={proceedToConfirm} disabled={saving}>
               <Save size={14} /> Continue
             </button>
@@ -487,7 +463,6 @@ const OpticianPending = () => {
             <div className="flex justify-between"><span className="text-slate-500">Frame</span><span className="font-semibold text-slate-800">{money(Number(form.frame) || 0)}</span></div>
             <div className="flex justify-between"><span className="text-slate-500">Fitting</span><span className="font-semibold text-slate-800">{money(Number(form.fitting) || 0)}</span></div>
             <div className="flex justify-between"><span className="text-slate-500">Case</span><span className="font-semibold text-slate-800">{money(Number(form.caseAmount) || 0)}</span></div>
-            <div className="flex justify-between"><span className="text-slate-500">Fargo</span><span className="font-semibold text-slate-800">{money(Number(form.fargo) || 0)}</span></div>
             <div className="flex justify-between pt-2 border-t border-slate-200">
               <span className="text-slate-500 font-semibold">Total</span>
               <span className="font-bold text-sky-600">{money(total)}</span>

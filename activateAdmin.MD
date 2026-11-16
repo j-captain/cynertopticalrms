@@ -1,1 +1,0 @@
-db.users.updateMany({ role: 'admin' }, { $set: { isActive: true } })

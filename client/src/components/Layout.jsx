@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Users as UsersIcon, FileText, LogOut, PlusCircle,
   ShoppingBag, Settings as SettingsIcon, ShieldCheck, UserCircle,
   ChevronsLeft, ChevronsRight, Menu, X, Stethoscope, Building2, UserCog,
-  Database, FolderOpen, Glasses, LogIn, ClipboardList, Package, Wallet, CreditCard,
+  Database, FolderOpen, Glasses, LogIn, ClipboardList, Package, Wallet, CreditCard, Send,
 } from 'lucide-react';
 import Logo from './Logo.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -49,6 +49,7 @@ const OPTICIAN_NAV = [
   { to: '/optician/amount', label: 'Order Amount', icon: Wallet },
   { to: '/optician/pending', label: 'Pending Orders', icon: ClipboardList },
   { to: '/optician/billed', label: 'Billed Orders', icon: FileText },
+  { to: '/optician/submitted', label: 'Submitted Orders', icon: Send }, 
   { to: '/optician/all', label: 'All Orders', icon: Package },
 ];
 
