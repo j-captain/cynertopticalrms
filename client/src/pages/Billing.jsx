@@ -3,7 +3,8 @@ import { motion } from 'framer-motion';
 import {
   Search, Filter, Calendar, Wallet, CheckCircle2, Package, Clock,
   ClipboardList, Pencil, Undo2, Truck, Layers, XCircle, Lock, Eye,
-  RefreshCw, ChevronRight,
+  RefreshCw, AlertTriangle, ShieldCheck, DollarSign, TrendingUp,
+  ChevronDown, ChevronRight,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../lib/api.js';
@@ -49,6 +50,13 @@ const BatchStatusBadge = ({ status }) => {
   );
 };
 
+const Stat = ({ label, value }) => (
+  <div className="rounded-lg bg-slate-50 px-2 py-1.5">
+    <p className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">{label}</p>
+    <p className="font-semibold text-slate-800">{value}</p>
+  </div>
+);
+
 const Billing = () => {
   const [tab, setTab] = useState('orders'); // 'orders' | 'batches'
 
@@ -66,6 +74,9 @@ const Billing = () => {
   const [batchLoading, setBatchLoading] = useState(false);
   const [batchStatus, setBatchStatus] = useState('all');
   const [batchQuery, setBatchQuery] = useState('');
+  const [batchFrom, setBatchFrom] = useState('');
+  const [batchTo, setBatchTo] = useState('');
+  const [expandedBatches, setExpandedBatches] = useState(new Set());
   const [batchDetails, setBatchDetails] = useState(null);
 
   /* Bill / Edit modal */
@@ -86,7 +97,7 @@ const Billing = () => {
   const [successOpen, setSuccessOpen] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
 
-  /* ─── Load orders ─── */
+  /* ─── Load orders + summary ─── */
   const load = async () => {
     setLoading(true);
     try {
@@ -114,6 +125,11 @@ const Billing = () => {
     } finally {
       setBatchLoading(false);
     }
+  };
+
+  /* Refresh BOTH views so paid counts stay in sync */
+  const refreshAll = async () => {
+    await Promise.all([load(), loadBatches()]);
   };
 
   useEffect(() => {
@@ -144,18 +160,60 @@ const Billing = () => {
     });
   }, [rows, from, to]);
 
+  /* ─── Batch date-range + text filter ─── */
   const filteredBatches = useMemo(() => {
     const needle = batchQuery.trim().toLowerCase();
-    if (!needle) return batches;
-    return batches.filter((b) =>
-      (b.batchNumber || '').toLowerCase().includes(needle) ||
-      (b.submittedByName || '').toLowerCase().includes(needle) ||
-      (b.orderIds || []).some((o) =>
-        (o.name || '').toLowerCase().includes(needle) ||
-        (o.systemNumber || '').toLowerCase().includes(needle)
-      )
-    );
-  }, [batches, batchQuery]);
+    return batches.filter((b) => {
+      if (needle) {
+        const matchText =
+          (b.batchNumber || '').toLowerCase().includes(needle) ||
+          (b.submittedByName || '').toLowerCase().includes(needle) ||
+          (b.orderIds || []).some((o) =>
+            (o.name || '').toLowerCase().includes(needle) ||
+            (o.systemNumber || '').toLowerCase().includes(needle)
+          );
+        if (!matchText) return false;
+      }
+      if (batchFrom || batchTo) {
+        const d = b.submittedAt;
+        if (!d) return false;
+        const t = new Date(d);
+        if (batchFrom && t < new Date(batchFrom)) return false;
+        if (batchTo) {
+          const end = new Date(batchTo);
+          end.setHours(23, 59, 59, 999);
+          if (t > end) return false;
+        }
+      }
+      return true;
+    });
+  }, [batches, batchQuery, batchFrom, batchTo]);
+
+  /* ─── Derived batch stats ─── */
+  const batchStats = useMemo(() => {
+    const base = batches.filter((b) => b.status !== 'cancelled');
+    const submitted = base.filter((b) => b.status === 'submitted');
+    const paid = base.filter((b) => b.status === 'paid');
+    const cancelled = batches.filter((b) => b.status === 'cancelled');
+    const sum = (arr, key) => arr.reduce((s, b) => s + (Number(b[key]) || 0), 0);
+    return {
+      submittedCount: submitted.length,
+      paidCount: paid.length,
+      cancelledCount: cancelled.length,
+      submittedTotal: sum(submitted, 'grandTotal'),
+      paidTotal: sum(paid, 'grandTotal'),
+      fargoTotal: sum(base, 'fargoAmount'),
+      outstandingOrders: base.reduce((s, b) => s + (b.orderIds?.length || 0), 0),
+    };
+  }, [batches]);
+
+  const toggleBatch = (id) => {
+    setExpandedBatches((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
 
   /* ─── Bill / Edit handlers ─── */
   const openBill = (r) => {
@@ -200,7 +258,7 @@ const Billing = () => {
       setSuccessOpen(true);
       setEditRow(null);
       setEditMode(null);
-      load();
+      refreshAll();
     } catch (e) {
       toast.error(e.response?.data?.message || 'Save failed');
     } finally {
@@ -234,7 +292,7 @@ const Billing = () => {
       setSuccessOpen(true);
       setActionRow(null);
       setActionType(null);
-      load();
+      refreshAll();
     } catch (e) {
       toast.error(e.response?.data?.message || 'Action failed');
     } finally {
@@ -255,14 +313,13 @@ const Billing = () => {
         await api.post(`/billing/admin/batches/${batch._id}/action`, { action });
         setSuccessMsg(
           action === 'paid'
-            ? `Batch ${batch.batchNumber} marked paid.`
+            ? `Batch ${batch.batchNumber} marked paid. All orders in the batch flipped to paid.`
             : `Batch ${batch.batchNumber} reverted to submitted.`
         );
       }
       setSuccessOpen(true);
       setBatchAction(null);
-      loadBatches();
-      load();
+      await refreshAll();
     } catch (e) {
       toast.error(e.response?.data?.message || 'Batch action failed');
     } finally {
@@ -312,8 +369,6 @@ const Billing = () => {
       stats: [
         { label: 'Pending',        value: s.pendingCount ?? 0 },
         { label: 'Billed (draft)', value: s.billedCount ?? 0 },
-        { label: 'Submitted',      value: s.submittedCount ?? 0 },
-        { label: 'Paid',           value: s.paidCount ?? 0 },
         { label: 'Delivered',      value: s.deliveredCount ?? 0 },
         { label: 'Billed Total',   value: money(s.billedTotal) },
         { label: 'Submitted Total',value: money(s.submittedTotal) },
@@ -345,18 +400,16 @@ const Billing = () => {
     exportTablePdf({ title: 'Billing Table', subtitle: subtitleParts.join(' · ') || 'All orders', columns, rows: pdfRows });
   };
 
-  /* ─── Summary cards - now aligned to adminBillingSummary response ─── */
+  /* ─── Summary cards (Orders tab) — Submitted & Paid count cards removed ─── */
   const cards = useMemo(() => summary ? [
-    { label: 'Pending',          value: summary.pendingCount,    cls: 'text-amber-600' },
-    { label: 'Billed (draft)',   value: summary.billedCount,     cls: 'text-sky-600' },
-    { label: 'Submitted',        value: summary.submittedCount,  cls: 'text-indigo-600' },
-    { label: 'Paid',             value: summary.paidCount,       cls: 'text-emerald-600' },
-    { label: 'Delivered',        value: summary.deliveredCount,  cls: 'text-violet-600' },
-    { label: 'Billed Total',     value: money(summary.billedTotal),    cls: 'text-sky-700' },
-    { label: 'Submitted Total',  value: money(summary.submittedTotal), cls: 'text-indigo-700' },
-    { label: 'Paid Total',       value: money(summary.paidTotal),      cls: 'text-emerald-700' },
-    { label: 'Fargo Total',      value: money(summary.fargoTotal),     cls: 'text-rose-700' },
-    { label: 'Grand Total',      value: money(summary.grandTotal),     cls: 'text-slate-900' },
+    { label: 'Pending',          value: summary.pendingCount,    cls: 'text-amber-600',   icon: Clock },
+    { label: 'Billed (draft)',   value: summary.billedCount,     cls: 'text-sky-600',     icon: Wallet },
+    { label: 'Delivered',        value: summary.deliveredCount,  cls: 'text-violet-600',  icon: Package },
+    { label: 'Billed Total',     value: money(summary.billedTotal),    cls: 'text-sky-700',     icon: Wallet },
+    { label: 'Submitted Total',  value: money(summary.submittedTotal), cls: 'text-indigo-700',  icon: TrendingUp },
+    { label: 'Paid Total',       value: money(summary.paidTotal),      cls: 'text-emerald-700', icon: DollarSign },
+    { label: 'Fargo Total',      value: money(summary.fargoTotal),     cls: 'text-rose-700',    icon: ShieldCheck },
+    { label: 'Grand Total',      value: money(summary.grandTotal),     cls: 'text-slate-900',   icon: AlertTriangle },
   ] : [], [summary]);
 
   /* ─── Per-row action button ─── */
@@ -460,7 +513,7 @@ const Billing = () => {
         <div>
           <h1 className="text-xl font-extrabold text-slate-900">Billing</h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Full billing control - bill, edit, submit batches, mark paid, deliver, revert.
+            Full billing control — bill, edit, submit batches, mark paid, deliver, revert.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -474,20 +527,73 @@ const Billing = () => {
               Batches
             </button>
           </div>
+          <button
+            onClick={refreshAll}
+            className="btn-ghost !py-1.5 !px-2 !text-xs inline-flex items-center gap-1"
+            title="Refresh both lists"
+          >
+            <RefreshCw size={12} /> Refresh
+          </button>
           <ExportMenu onCsv={exportCsv} onPdfSummary={exportPdfSummary} onPdfTable={exportPdfTable} />
         </div>
       </div>
 
-      {/* Summary cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-        {cards.map((c, i) => (
-          <motion.div key={c.label} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.03 }} className="card p-3">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">{c.label}</p>
-            <p className={`text-lg font-extrabold mt-0.5 ${c.cls}`}>{c.value}</p>
-          </motion.div>
-        ))}
-      </div>
+      {/* ─── Orders tab summary cards ─── */}
+      {tab === 'orders' && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+          {cards.map((c, i) => {
+            const Icon = c.icon;
+            return (
+              <motion.div key={c.label} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.03 }} className="card p-3">
+                <div className="flex items-center gap-1.5">
+                  <Icon size={11} className="text-slate-400" />
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">{c.label}</p>
+                </div>
+                <p className={`text-lg font-extrabold mt-0.5 ${c.cls}`}>{c.value}</p>
+              </motion.div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ─── Batches tab summary cards ─── */}
+      {tab === 'batches' && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+          <div className="card p-3">
+            <div className="flex items-center gap-1.5">
+              <Layers size={11} className="text-slate-400" />
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Unpaid batches</p>
+            </div>
+            <p className="text-lg font-extrabold mt-0.5 text-indigo-600">{batchStats.submittedCount}</p>
+            <p className="text-[10px] text-slate-500 mt-0.5">{money(batchStats.submittedTotal)}</p>
+          </div>
+          <div className="card p-3">
+            <div className="flex items-center gap-1.5">
+              <CheckCircle2 size={11} className="text-slate-400" />
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Paid batches</p>
+            </div>
+            <p className="text-lg font-extrabold mt-0.5 text-emerald-600">{batchStats.paidCount}</p>
+            <p className="text-[10px] text-slate-500 mt-0.5">{money(batchStats.paidTotal)}</p>
+          </div>
+          <div className="card p-3">
+            <div className="flex items-center gap-1.5">
+              <ShieldCheck size={11} className="text-slate-400" />
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Fargo collected</p>
+            </div>
+            <p className="text-lg font-extrabold mt-0.5 text-rose-600">{money(batchStats.fargoTotal)}</p>
+            <p className="text-[10px] text-slate-500 mt-0.5">across live batches</p>
+          </div>
+          <div className="card p-3">
+            <div className="flex items-center gap-1.5">
+              <XCircle size={11} className="text-slate-400" />
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Cancelled</p>
+            </div>
+            <p className="text-lg font-extrabold mt-0.5 text-rose-600">{batchStats.cancelledCount}</p>
+            <p className="text-[10px] text-slate-500 mt-0.5">reverted to draft</p>
+          </div>
+        </div>
+      )}
 
       {/* ───────────── Orders Tab ───────────── */}
       {tab === 'orders' && (
@@ -586,17 +692,17 @@ const Billing = () => {
         </>
       )}
 
-      {/* ───────────── Batches Tab ───────────── */}
+      {/* ───────────── Batches Tab (expandable cards) ───────────── */}
       {tab === 'batches' && (
         <>
           <div className="grid grid-cols-1 md:grid-cols-12 gap-2">
-            <div className="relative md:col-span-6">
+            <div className="relative md:col-span-4">
               <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
               <input className="input !py-2 !pl-8 !text-xs w-full"
                 placeholder="Search batch #, patient, system no., submitter…"
                 value={batchQuery} onChange={(e) => setBatchQuery(e.target.value)} />
             </div>
-            <div className="relative md:col-span-4">
+            <div className="relative md:col-span-3">
               <Filter size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
               <select className="input !py-2 !pl-8 !pr-7 !text-xs appearance-none w-full"
                 value={batchStatus} onChange={(e) => setBatchStatus(e.target.value)}>
@@ -606,82 +712,178 @@ const Billing = () => {
                 <option value="cancelled">Cancelled</option>
               </select>
             </div>
-            <div className="md:col-span-2 flex justify-end">
-              <button onClick={loadBatches} className="btn-ghost !py-2 !px-2 !text-xs w-full md:w-auto">
-                <RefreshCw size={12} className="inline mr-1" /> Refresh
+            <div className="relative md:col-span-2">
+              <Calendar size={12} className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input type="date" className="input !py-2 !pl-7 !text-xs w-full" value={batchFrom} onChange={(e) => setBatchFrom(e.target.value)} />
+            </div>
+            <div className="relative md:col-span-2">
+              <Calendar size={12} className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input type="date" className="input !py-2 !pl-7 !text-xs w-full" value={batchTo} onChange={(e) => setBatchTo(e.target.value)} />
+            </div>
+            <div className="md:col-span-1 flex justify-end">
+              <button onClick={() => { setBatchQuery(''); setBatchStatus('all'); setBatchFrom(''); setBatchTo(''); refreshAll(); }}
+                className="btn-ghost !py-2 !px-2 !text-xs w-full md:w-auto" title="Clear filters">
+                Clear
               </button>
             </div>
           </div>
 
-          <div className="card overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="min-w-full text-xs">
-                <thead>
-                  <tr className="bg-slate-50 text-slate-500 text-[10px] uppercase tracking-wider">
-                    <th className="px-2 py-2 text-left font-semibold">Batch #</th>
-                    <th className="px-2 py-2 text-left font-semibold">Submitted By</th>
-                    <th className="px-2 py-2 text-left font-semibold">Submitted At</th>
-                    <th className="px-2 py-2 text-right font-semibold">Orders</th>
-                    <th className="px-2 py-2 text-right font-semibold">Orders Total</th>
-                    <th className="px-2 py-2 text-right font-semibold">Fargo</th>
-                    <th className="px-2 py-2 text-right font-semibold">Grand Total</th>
-                    <th className="px-2 py-2 text-left font-semibold">Status</th>
-                    <th className="px-2 py-2 text-right font-semibold">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {batchLoading && <tr><td colSpan={9} className="text-center py-8 text-slate-400">Loading…</td></tr>}
-                  {!batchLoading && filteredBatches.length === 0 && (
-                    <tr><td colSpan={9} className="text-center py-8 text-slate-400">No batches found.</td></tr>
+          <div className="space-y-2">
+            {batchLoading && <div className="card p-6 text-center text-slate-400 text-sm">Loading…</div>}
+            {!batchLoading && filteredBatches.length === 0 && (
+              <div className="card p-6 text-center text-slate-400 text-sm">No batches found.</div>
+            )}
+
+            {filteredBatches.map((b) => {
+              const isOpen = expandedBatches.has(b._id);
+              const canPay = b.status === 'submitted';
+              const canRevert = b.status === 'paid';
+              const canCancel = b.status === 'submitted';
+              const canDeliver = b.status === 'submitted' || b.status === 'paid';
+
+              return (
+                <motion.div
+                  key={b._id}
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="card p-3 space-y-2"
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-mono text-sm font-bold text-slate-800">{b.batchNumber}</p>
+                        <BatchStatusBadge status={b.status} />
+                      </div>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        Submitted by {b.submittedByName || '-'} · {b.submittedAt ? fmtDate(b.submittedAt) : '-'}
+                      </p>
+                    </div>
+                    <div className="text-right text-xs">
+                      <p className="text-slate-500">Grand total</p>
+                      <p className="font-bold text-indigo-600">{money(b.grandTotal)}</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                    <Stat label="Orders" value={b.orderIds?.length ?? 0} />
+                    <Stat label="Orders Total" value={money(b.ordersTotal)} />
+                    <Stat label="Fargo" value={money(b.fargoAmount)} />
+                    <Stat label="Status" value={BATCH_STATUS_STYLES[b.status]?.label || b.status} />
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={() => toggleBatch(b._id)}
+                      className="inline-flex items-center gap-1 rounded-md bg-white border border-slate-200 text-slate-600 px-2.5 py-1.5 text-[11px] font-semibold hover:bg-slate-50 transition"
+                    >
+                      {isOpen ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                      {isOpen ? 'Hide' : 'Show'} orders
+                    </button>
+
+                    <button
+                      onClick={() => setBatchDetails(b)}
+                      className="inline-flex items-center gap-1 rounded-md bg-white border border-slate-200 text-slate-600 px-2.5 py-1.5 text-[11px] font-semibold hover:bg-slate-50 transition"
+                      title="View batch details"
+                    >
+                      <Eye size={12} /> Details
+                    </button>
+
+                    {canDeliver && (
+                      <button
+                        onClick={() => setBatchAction({ batch: b, action: 'deliver' })}
+                        className="inline-flex items-center gap-1 rounded-md bg-gradient-to-r from-sky-500 to-indigo-500 text-white px-2.5 py-1.5 text-[11px] font-bold hover:from-sky-600 hover:to-indigo-600 transition"
+                      >
+                        <Truck size={12} /> Deliver Batch
+                      </button>
+                    )}
+
+                    {canPay && (
+                      <button
+                        onClick={() => setBatchAction({ batch: b, action: 'paid' })}
+                        className="inline-flex items-center gap-1 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-100 px-2.5 py-1.5 text-[11px] font-semibold hover:bg-emerald-100 transition"
+                      >
+                        <CheckCircle2 size={12} /> Mark Paid
+                      </button>
+                    )}
+
+                    {canRevert && (
+                      <button
+                        onClick={() => setBatchAction({ batch: b, action: 'revert' })}
+                        className="inline-flex items-center gap-1 rounded-md bg-white border border-amber-200 text-amber-700 px-2.5 py-1.5 text-[11px] font-semibold hover:bg-amber-50 transition"
+                      >
+                        <Undo2 size={12} /> Revert to Submitted
+                      </button>
+                    )}
+
+                    {canCancel && (
+                      <button
+                        onClick={() => setBatchAction({ batch: b, action: 'cancel' })}
+                        className="inline-flex items-center gap-1 rounded-md bg-white border border-rose-200 text-rose-700 px-2.5 py-1.5 text-[11px] font-semibold hover:bg-rose-50 transition"
+                      >
+                        <XCircle size={12} /> Cancel Batch
+                      </button>
+                    )}
+                  </div>
+
+                  {isOpen && (
+                    <div className="rounded-xl border border-slate-200 overflow-hidden">
+                      <table className="min-w-full text-xs">
+                        <thead className="bg-slate-50 text-slate-500 text-[10px] uppercase tracking-wider">
+                          <tr>
+                            <th className="px-2 py-1.5 text-left font-semibold">#</th>
+                            <th className="px-2 py-1.5 text-left font-semibold">Patient</th>
+                            <th className="px-2 py-1.5 text-left font-semibold">Sys No.</th>
+                            <th className="px-2 py-1.5 text-left font-semibold">Lens</th>
+                            <th className="px-2 py-1.5 text-left font-semibold">Status</th>
+                            <th className="px-2 py-1.5 text-right font-semibold">Total</th>
+                            <th className="px-2 py-1.5 text-right font-semibold">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {(b.orderIds || []).map((o, i) => (
+                            <tr key={o._id} className="border-t border-slate-100">
+                              <td className="px-2 py-1.5 text-slate-400 tabular-nums">{i + 1}</td>
+                              <td className="px-2 py-1.5 font-semibold text-slate-800">{o.name || '-'}</td>
+                              <td className="px-2 py-1.5 text-slate-500 font-mono">{o.systemNumber || '-'}</td>
+                              <td className="px-2 py-1.5 text-slate-500">{o.lensType || '-'}</td>
+                              <td className="px-2 py-1.5">
+                                <StatusBadge status={o.billingStatus || 'submitted_to_director'} />
+                              </td>
+                              <td className="px-2 py-1.5 text-right tabular-nums">{money(o.billing?.total)}</td>
+                              <td className="px-2 py-1.5 text-right">
+                                <div className="flex items-center justify-end gap-1 flex-wrap">
+                                  {o.billingStatus === 'submitted_to_director' && (
+                                    <button
+                                      onClick={() => openAction({ _id: o._id, patientName: o.name }, 'paid')}
+                                      className="inline-flex items-center gap-1 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-100 px-2 py-1 text-[10px] font-semibold hover:bg-emerald-100 transition"
+                                    >
+                                      <CheckCircle2 size={10} /> Mark Paid
+                                    </button>
+                                  )}
+                                  {o.billingStatus === 'paid' && (
+                                    <button
+                                      onClick={() => openAction({ _id: o._id, patientName: o.name }, 'deliver')}
+                                      className="inline-flex items-center gap-1 rounded-md bg-white border border-slate-200 text-slate-600 px-2 py-1 text-[10px] font-semibold hover:bg-slate-50 transition"
+                                    >
+                                      <Truck size={10} /> Deliver
+                                    </button>
+                                  )}
+                                  {o.billingStatus === 'delivered' && (
+                                    <span className="inline-flex items-center gap-1 text-[10px] text-violet-500">
+                                      <Package size={10} /> Delivered
+                                    </span>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   )}
-                  {filteredBatches.map((b) => {
-                    const canPay = b.status === 'submitted';
-                    const canRevert = b.status === 'paid';
-                    const canCancel = b.status === 'submitted';
-                    return (
-                      <tr key={b._id} className="border-t border-slate-100 hover:bg-indigo-50/30">
-                        <td className="px-2 py-2 font-mono text-[11px] font-semibold text-slate-800">{b.batchNumber}</td>
-                        <td className="px-2 py-2 text-slate-600">{b.submittedByName || '-'}</td>
-                        <td className="px-2 py-2 text-slate-500 whitespace-nowrap">
-                          {b.submittedAt ? fmtDate(b.submittedAt) : '-'}
-                        </td>
-                        <td className="px-2 py-2 text-right tabular-nums">{b.orderIds?.length ?? 0}</td>
-                        <td className="px-2 py-2 text-right tabular-nums">{money(b.ordersTotal)}</td>
-                        <td className="px-2 py-2 text-right tabular-nums">{money(b.fargoAmount)}</td>
-                        <td className="px-2 py-2 text-right font-bold text-indigo-600 tabular-nums">{money(b.grandTotal)}</td>
-                        <td className="px-2 py-2"><BatchStatusBadge status={b.status} /></td>
-                        <td className="px-2 py-2">
-                          <div className="flex items-center justify-end gap-1">
-                            <button onClick={() => setBatchDetails(b)}
-                              className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700" title="View orders">
-                              <Eye size={12} />
-                            </button>
-                            {canPay && (
-                              <button onClick={() => setBatchAction({ batch: b, action: 'paid' })}
-                                className="inline-flex items-center gap-1 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-100 px-2 py-1 text-[10px] font-semibold hover:bg-emerald-100 transition">
-                                <CheckCircle2 size={10} /> Paid
-                              </button>
-                            )}
-                            {canRevert && (
-                              <button onClick={() => setBatchAction({ batch: b, action: 'revert' })}
-                                className="rounded-md p-1 text-slate-400 hover:bg-amber-50 hover:text-amber-600" title="Revert to submitted">
-                                <Undo2 size={12} />
-                              </button>
-                            )}
-                            {canCancel && (
-                              <button onClick={() => setBatchAction({ batch: b, action: 'cancel' })}
-                                className="rounded-md p-1 text-slate-400 hover:bg-rose-50 hover:text-rose-600" title="Cancel batch">
-                                <XCircle size={12} />
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                </motion.div>
+              );
+            })}
           </div>
         </>
       )}
@@ -753,6 +955,7 @@ const Billing = () => {
           <div className="mx-auto h-12 w-12 rounded-full bg-indigo-50 grid place-items-center">
             {batchAction?.action === 'cancel' ? <XCircle className="text-rose-600" size={22} /> :
              batchAction?.action === 'revert' ? <Undo2 className="text-amber-600" size={22} /> :
+             batchAction?.action === 'deliver' ? <Truck className="text-sky-600" size={22} /> :
              <CheckCircle2 className="text-emerald-600" size={22} />}
           </div>
           <div className="text-center text-sm text-slate-700">
@@ -764,6 +967,9 @@ const Billing = () => {
             )}
             {batchAction?.action === 'cancel' && (
               <>Cancel batch <strong>{batchAction.batch.batchNumber}</strong>? All orders will revert to <em>billed (draft)</em> and become editable again.</>
+            )}
+            {batchAction?.action === 'deliver' && (
+              <>Deliver all outstanding orders in batch <strong>{batchAction.batch.batchNumber}</strong>? Orders will be marked as <em>delivered</em>.</>
             )}
           </div>
           <div className="flex justify-end gap-2">
@@ -801,18 +1007,24 @@ const Billing = () => {
               <table className="min-w-full text-xs">
                 <thead>
                   <tr className="bg-slate-50 text-slate-500 text-[10px] uppercase">
+                    <th className="px-2 py-1.5 text-left font-semibold">#</th>
                     <th className="px-2 py-1.5 text-left font-semibold">Patient</th>
                     <th className="px-2 py-1.5 text-left font-semibold">System No.</th>
                     <th className="px-2 py-1.5 text-left font-semibold">Lens</th>
+                    <th className="px-2 py-1.5 text-left font-semibold">Status</th>
                     <th className="px-2 py-1.5 text-right font-semibold">Total</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {(batchDetails.orderIds || []).map((o) => (
+                  {(batchDetails.orderIds || []).map((o, i) => (
                     <tr key={o._id} className="border-t border-slate-100">
+                      <td className="px-2 py-1.5 text-slate-400 tabular-nums">{i + 1}</td>
                       <td className="px-2 py-1.5 font-semibold text-slate-800">{o.name || '-'}</td>
-                      <td className="px-2 py-1.5 text-slate-500">{o.systemNumber || '-'}</td>
+                      <td className="px-2 py-1.5 text-slate-500 font-mono">{o.systemNumber || '-'}</td>
                       <td className="px-2 py-1.5 text-slate-500">{o.lensType || '-'}</td>
+                      <td className="px-2 py-1.5">
+                        <StatusBadge status={o.billingStatus || 'submitted_to_director'} />
+                      </td>
                       <td className="px-2 py-1.5 text-right tabular-nums">{money(o.billing?.total)}</td>
                     </tr>
                   ))}

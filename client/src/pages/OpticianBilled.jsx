@@ -1,25 +1,116 @@
-import { useEffect, useMemo, useState } from 'react';
-import { motion } from 'framer-motion';
+import { useEffect, useMemo, useState, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Search, Pencil, Truck, Save, ShieldAlert, ClipboardList,
+  Search, Pencil, Save, ShieldAlert, ClipboardList, X,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../lib/api.js';
 import { fmtDate } from '../lib/date.js';
 import Modal from '../components/Modal.jsx';
 import SuccessModal from '../components/SuccessModal.jsx';
+import { useRef } from 'react';
 
 const money = (n) => `KES ${Number(n || 0).toLocaleString('en-KE')}`;
+
+/* ────────────────────────────────────────────────────────────────── */
+/* Detail popover - same design as OpticianPending                     */
+/* ────────────────────────────────────────────────────────────────── */
+const RowDetail = ({ patient, anchorRect, onClose }) => {
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const onDocClick = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) onClose();
+    };
+    const onKey = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('mousedown', onDocClick);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDocClick);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [onClose]);
+
+  const cardW = Math.min(360, typeof window !== 'undefined' ? window.innerWidth - 24 : 360);
+  const gap = 8;
+
+  const viewportW = typeof window !== 'undefined' ? window.innerWidth : 1200;
+  const viewportH = typeof window !== 'undefined' ? window.innerHeight : 800;
+
+  // Anchor to the clicked cell's left edge
+  let left = anchorRect.left + 50;
+
+  // If it would overflow right, slide left until it fits
+  if (left + cardW > viewportW - 12) left = viewportW - 12 - cardW;
+  // If it would overflow left, clamp
+  if (left < 12) left = 12;
+
+  // Always below the clicked cell
+  const estimatedH = 150;
+  let top = anchorRect.bottom + gap;
+  // If it would overflow the bottom, place above the cell
+  if (top + estimatedH > viewportH - 12) {
+    top = Math.max(12, anchorRect.top - estimatedH - gap);
+  }
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: -8, scale: 0.94 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -8, scale: 0.94 }}
+      transition={{ type: 'spring', stiffness: 420, damping: 30, mass: 0.7 }}
+      style={{
+        position: 'fixed',
+        top,
+        left,
+        width: cardW,
+        transformOrigin: 'top left',
+      }}
+      className="z-50 rounded-xl border border-slate-200 bg-white shadow-2xl ring-1 ring-slate-900/5"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="px-4 py-3 space-y-3 text-center">
+        <div>
+          <p className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Patient</p>
+          <p className="text-sm font-bold text-slate-800 leading-snug break-words">
+            {patient.patientName || '-'}
+          </p>
+        </div>
+
+        <div>
+          <p className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Lens Type</p>
+          <p className="text-sm text-slate-700 leading-snug break-words">
+            {patient.lensType || '-'}
+          </p>
+        </div>
+
+        <div>
+          <p className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Frame Code</p>
+          <p className="text-sm font-mono text-slate-700 leading-snug break-words">
+            {patient.frameCode || '-'}
+          </p>
+        </div>
+      </div>
+
+      <button
+        onClick={onClose}
+        className="absolute -right-2 -top-2 h-6 w-6 rounded-full bg-white border border-slate-200 shadow-sm grid place-items-center text-slate-500 hover:text-slate-800 hover:border-slate-300 transition"
+        aria-label="Close"
+      >
+        <X size={11} />
+      </button>
+    </motion.div>
+  );
+};
 
 const OpticianBilled = () => {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState('');
-
-  /* Deliver */
-  const [deliverTarget, setDeliverTarget] = useState(null);
-  const [deliverGateOpen, setDeliverGateOpen] = useState(false);
-  const [delivering, setDelivering] = useState(false);
+  const [detail, setDetail] = useState(null);
 
   /* Edit */
   const [editTarget, setEditTarget] = useState(null);
@@ -46,6 +137,7 @@ const OpticianBilled = () => {
     try {
       const r = await api.get('/billing/optician/billed', { params: { q } });
       setRows(r.data);
+      setDetail(null);
     } catch {
       toast.error('Failed to load billed orders');
     } finally {
@@ -58,25 +150,30 @@ const OpticianBilled = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q]);
 
-  /* Deliver */
-  const openDeliverGate = (p) => { setDeliverTarget(p); setDeliverGateOpen(true); };
-  const confirmDeliver = async () => {
-    if (!deliverTarget) return;
-    setDelivering(true);
-    try {
-      await api.post(`/billing/optician/${deliverTarget._id}/deliver`);
-      setSuccessMsg(`${deliverTarget.patientName} marked delivered.`);
-      setDeliverGateOpen(false);
-      setDeliverTarget(null);
-      setSuccessOpen(true);
-      load();
-    } catch (e) {
-      toast.error(e.response?.data?.message || 'Deliver failed');
-    } finally { setDelivering(false); }
-  };
+  /* ─── Row click opens the detail popover ─── */
+  const openDetail = useCallback((p, cellEl) => {
+    const rect = cellEl.getBoundingClientRect();
+    setDetail((cur) => {
+      if (cur && cur.patient._id === p._id) return null;
+      return {
+        id: `${p._id}-${Date.now()}`,
+        patient: p,
+        anchorRect: {
+          top: rect.top,
+          bottom: rect.bottom,
+          left: rect.left,
+          right: rect.right,
+          height: rect.height,
+        },
+      };
+    });
+  }, []);
 
   /* Edit */
-  const openEditGate = (p) => setEditGateTarget(p);
+  const openEditGate = (p) => {
+    setDetail(null);
+    setEditGateTarget(p);
+  };
   const proceedToEditForm = () => {
     if (!editGateTarget) return;
     const p = editGateTarget;
@@ -173,7 +270,7 @@ const OpticianBilled = () => {
         <div>
           <h1 className="text-xl font-extrabold text-slate-900">Billed Orders</h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Draft bills you've entered. Push a batch to the director when ready.
+            Draft bills you've entered. Click a patient, lens type, or frame code to see full details.
           </p>
         </div>
         <button
@@ -212,39 +309,72 @@ const OpticianBilled = () => {
             <tbody>
               {loading && <tr><td colSpan={8} className="text-center py-8 text-slate-400">Loading…</td></tr>}
               {!loading && rows.length === 0 && <tr><td colSpan={8} className="text-center py-8 text-slate-400">No draft bills.</td></tr>}
-              {rows.map((p) => (
-                <motion.tr key={p._id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="border-t border-slate-100 hover:bg-sky-50/40">
-                  <td className="px-2 py-1.5 text-slate-400 tabular-nums">{p.index}</td>
-                  <td className="px-2 py-1.5 font-semibold text-slate-800 whitespace-nowrap max-w-[160px] truncate" title={p.patientName}>{p.patientName}</td>
-                  <td className="px-2 py-1.5 text-slate-600 whitespace-nowrap max-w-[160px] truncate" title={p.lensType || ''}>{p.lensType || '-'}</td>
-                  <td className="px-2 py-1.5 text-slate-600 whitespace-nowrap max-w-[140px] truncate" title={p.frameCode || ''}>{p.frameCode || '-'}</td>
-                  <td className="px-2 py-1.5 text-right font-bold text-sky-600 tabular-nums">{money(p.billing?.total)}</td>
-                  <td className="px-2 py-1.5 text-slate-600 whitespace-nowrap">{p.billing?.billedByName || '-'}</td>
-                  <td className="px-2 py-1.5 text-slate-500 whitespace-nowrap">{p.billing?.billedAt ? fmtDate(p.billing.billedAt) : '-'}</td>
-                  <td className="px-2 py-1.5 text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <button
-                        onClick={() => openEditGate(p)}
-                        className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
-                        title="Edit bill"
-                      >
-                        <Pencil size={12} />
-                      </button>
-                      <button
-                        onClick={() => openDeliverGate(p)}
-                        className="inline-flex items-center gap-1 rounded-md bg-white border border-slate-200 text-slate-600 px-2 py-1 text-[10px] font-semibold hover:bg-slate-50 transition"
-                        title="Mark delivered"
-                      >
-                        <Truck size={10} /> Deliver
-                      </button>
-                    </div>
-                  </td>
-                </motion.tr>
-              ))}
+              {rows.map((p) => {
+                const isOpen = detail?.patient?._id === p._id;
+                const clickableProps = (e) => openDetail(p, e.currentTarget);
+                return (
+                  <motion.tr
+                    key={p._id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className={`border-t border-slate-100 transition ${
+                      isOpen ? 'bg-sky-50/60' : 'hover:bg-sky-50/40'
+                    }`}
+                  >
+                    <td className="px-2 py-1.5 text-slate-400 tabular-nums">{p.index}</td>
+                    <td
+                      onClick={clickableProps}
+                      className="px-2 py-1.5 font-semibold text-slate-800 whitespace-nowrap max-w-[160px] truncate cursor-pointer"
+                      title={p.patientName}
+                    >
+                      {p.patientName}
+                    </td>
+                    <td
+                      onClick={clickableProps}
+                      className="px-2 py-1.5 text-slate-600 whitespace-nowrap max-w-[160px] truncate cursor-pointer"
+                      title={p.lensType || ''}
+                    >
+                      {p.lensType || '-'}
+                    </td>
+                    <td
+                      onClick={clickableProps}
+                      className="px-2 py-1.5 text-slate-600 whitespace-nowrap max-w-[140px] truncate cursor-pointer"
+                      title={p.frameCode || ''}
+                    >
+                      {p.frameCode || '-'}
+                    </td>
+                    <td className="px-2 py-1.5 text-right font-bold text-sky-600 tabular-nums">{money(p.billing?.total)}</td>
+                    <td className="px-2 py-1.5 text-slate-600 whitespace-nowrap">{p.billing?.billedByName || '-'}</td>
+                    <td className="px-2 py-1.5 text-slate-500 whitespace-nowrap">{p.billing?.billedAt ? fmtDate(p.billing.billedAt) : '-'}</td>
+                    <td className="px-2 py-1.5 text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); openEditGate(p); }}
+                          className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                          title="Edit bill"
+                        >
+                          <Pencil size={12} />
+                        </button>
+                      </div>
+                    </td>
+                  </motion.tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
       </div>
+
+      <AnimatePresence mode="wait">
+        {detail && (
+          <RowDetail
+            key={detail.id}
+            patient={detail.patient}
+            anchorRect={detail.anchorRect}
+            onClose={() => setDetail(null)}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Pick */}
       <Modal open={pickOpen} onClose={() => setPickOpen(false)} title="Submit Bill - Select Orders" width="max-w-2xl">
@@ -369,7 +499,7 @@ const OpticianBilled = () => {
         </div>
       </Modal>
 
-      {/* Edit Gate / Form / Confirm + Deliver Gate - same as before, kept intact */}
+      {/* Edit Gate / Form / Confirm */}
       <Modal open={!!editGateTarget} onClose={() => setEditGateTarget(null)} title="Edit Bill" width="max-w-md">
         <div className="space-y-4">
           <div className="mx-auto h-12 w-12 rounded-full bg-sky-50 grid place-items-center">
@@ -435,23 +565,6 @@ const OpticianBilled = () => {
             <button className="btn-ghost" onClick={() => setEditConfirmOpen(false)} disabled={saving}>Back</button>
             <button className="btn-primary" onClick={confirmEdit} disabled={saving}>
               {saving ? <span className="h-4 w-4 rounded-full border-2 border-white/40 border-t-white animate-spin" /> : <><Save size={14} /> Save Changes</>}
-            </button>
-          </div>
-        </div>
-      </Modal>
-
-      <Modal open={deliverGateOpen} onClose={() => !delivering && setDeliverGateOpen(false)} title="Mark Delivered" width="max-w-md">
-        <div className="space-y-4">
-          <div className="mx-auto h-12 w-12 rounded-full bg-violet-50 grid place-items-center">
-            <Truck className="text-violet-600" size={22} />
-          </div>
-          <div className="text-center">
-            <p className="text-sm text-slate-700">Mark <strong>{deliverTarget?.patientName}</strong> as delivered?</p>
-          </div>
-          <div className="flex justify-end gap-2">
-            <button className="btn-ghost" onClick={() => setDeliverGateOpen(false)} disabled={delivering}>Cancel</button>
-            <button className="btn-primary" onClick={confirmDeliver} disabled={delivering}>
-              {delivering ? <span className="h-4 w-4 rounded-full border-2 border-white/40 border-t-white animate-spin" /> : <><Truck size={14} /> Deliver</>}
             </button>
           </div>
         </div>

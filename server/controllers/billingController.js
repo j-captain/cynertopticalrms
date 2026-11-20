@@ -305,7 +305,10 @@ export const opticianEditBill = async (req, res, next) => {
 };
 
 /* ────────────────────────────────────────────────────────────────── */
-/* Deliver                                                            */
+/* Deliver (legacy endpoint)                                         */
+/* HARDENED: only submitted_to_director or paid orders can be        */
+/* delivered. Draft ('billed') orders must go through a batch submit */
+/* first, then be delivered via /undelivered/*.                      */
 /* ────────────────────────────────────────────────────────────────── */
 export const deliverOrder = async (req, res, next) => {
   try {
@@ -315,12 +318,12 @@ export const deliverOrder = async (req, res, next) => {
     const { id } = req.params;
     const p = await Patient.findById(id);
     if (!p) return res.status(404).json({ message: 'Patient not found' });
-    if (p.billingStatus === 'pending_billing') {
-      return res.status(400).json({ message: 'Cannot deliver an unbilled order' });
+    if (!['submitted_to_director', 'paid'].includes(p.billingStatus)) {
+      return res.status(400).json({
+        message: 'Only submitted or paid orders can be delivered. Submit the bill batch first.',
+      });
     }
-    if (p.billingStatus === 'delivered') {
-      return res.status(400).json({ message: 'Already delivered' });
-    }
+
     p.billingStatus = 'delivered';
     p.orderDelivered = true;
     p.deliveredAt = p.deliveredAt || new Date();
@@ -354,10 +357,6 @@ export const deliverOrder = async (req, res, next) => {
 /*                                                                    */
 /* After this, the order is visible to the director, grouped as      */
 /* one batch row. Individual drafts no longer appear separately.     */
-/* ────────────────────────────────────────────────────────────────── */
-/* ────────────────────────────────────────────────────────────────── */
-/* Complete Billing - the batch submit (was fargo batch)             */
-/* Body: { orderIds: string[], fargo: number }                        */
 /* ────────────────────────────────────────────────────────────────── */
 export const completeBilling = async (req, res, next) => {
   try {
@@ -592,6 +591,11 @@ export const directorBatches = async (req, res, next) => {
 
 /* ────────────────────────────────────────────────────────────────── */
 /* Director - mark a batch paid → flips all its orders to 'paid'     */
+/*                                                                    */
+/* IMPORTANT: every non-delivered order in the batch is flipped,     */
+/* regardless of whether its current state is submitted_to_director  */
+/* or already paid. This guarantees the batch-level "paid" status    */
+/* and the order-level paid counts always agree.                     */
 /* ────────────────────────────────────────────────────────────────── */
 export const markBatchPaid = async (req, res, next) => {
   try {
@@ -610,9 +614,9 @@ export const markBatchPaid = async (req, res, next) => {
     batch.paidByName = req.user.name;
     await batch.save();
 
-    // Flip every order in the batch
+    // Flip EVERY non-delivered order in the batch.
     await Patient.updateMany(
-      { _id: { $in: batch.orderIds }, billingStatus: 'submitted_to_director' },
+      { _id: { $in: batch.orderIds }, billingStatus: { $ne: 'delivered' } },
       {
         $set: {
           billingStatus: 'paid',
@@ -902,6 +906,10 @@ export const adminListBatches = async (req, res, next) => {
 /* Admin - batch action: mark paid OR revert to submitted            */
 /* POST /billing/admin/batches/:id/action                            */
 /* Body: { action: 'paid' | 'revert' }                               */
+/*                                                                    */
+/* IMPORTANT: 'paid' flips every non-delivered order to paid;        */
+/* 'revert' flips every non-delivered order back to submitted.       */
+/* This keeps the batch and its orders perfectly in sync.            */
 /* ────────────────────────────────────────────────────────────────── */
 export const adminBatchAction = async (req, res, next) => {
   try {
@@ -926,7 +934,7 @@ export const adminBatchAction = async (req, res, next) => {
       await batch.save();
 
       await Patient.updateMany(
-        { _id: { $in: batch.orderIds }, billingStatus: 'submitted_to_director' },
+        { _id: { $in: batch.orderIds }, billingStatus: { $ne: 'delivered' } },
         {
           $set: {
             billingStatus: 'paid',
@@ -957,7 +965,7 @@ export const adminBatchAction = async (req, res, next) => {
       await batch.save();
 
       await Patient.updateMany(
-        { _id: { $in: batch.orderIds }, billingStatus: 'paid' },
+        { _id: { $in: batch.orderIds }, billingStatus: { $ne: 'delivered' } },
         {
           $set: {
             billingStatus: 'submitted_to_director',
@@ -978,6 +986,174 @@ export const adminBatchAction = async (req, res, next) => {
     }
 
     return res.status(400).json({ message: 'Unknown action' });
+  } catch (err) {
+    next(err);
+  }
+};
+
+
+/* ────────────────────────────────────────────────────────────────── */
+/* Undelivered — submitted or paid, but not yet delivered             */
+/* ────────────────────────────────────────────────────────────────── */
+export const listUndelivered = async (req, res, next) => {
+  try {
+    if (!requireRole(req, ['optician', 'admin'])) {
+      return res.status(403).json({ message: 'Optician or admin only' });
+    }
+    const { q } = req.query;
+    const UNDELIVERED_STATUSES = ['submitted_to_director', 'paid'];
+
+    const orderFilter = { billingStatus: { $in: UNDELIVERED_STATUSES } };
+    if (q) {
+      orderFilter.$or = [
+        { name: { $regex: q, $options: 'i' } },
+        { systemNumber: { $regex: q, $options: 'i' } },
+        { lensType: { $regex: q, $options: 'i' } },
+        { frameCode: { $regex: q, $options: 'i' } },
+      ];
+    }
+    const orders = await Patient.find(orderFilter).sort({ updatedAt: -1 }).lean();
+
+    const batchDocs = await BillingBatch.find({
+      status: { $in: ['submitted', 'paid'] },
+    })
+      .sort({ submittedAt: -1 })
+      .populate('orderIds', 'name systemNumber lensType billing billingStatus scheme')
+      .lean();
+
+    const liveBatches = batchDocs
+      .map((b) => {
+        const outstanding = (b.orderIds || []).filter(
+          (o) => o && UNDELIVERED_STATUSES.includes(o.billingStatus)
+        );
+        return {
+          _id: b._id,
+          batchNumber: b.batchNumber,
+          status: b.status,
+          submittedAt: b.submittedAt,
+          submittedByName: b.submittedByName || '',
+          ordersTotal: b.ordersTotal || 0,
+          fargoAmount: b.fargoAmount || 0,
+          grandTotal: b.grandTotal || 0,
+          totalOrders: (b.orderIds || []).length,
+          outstandingOrders: outstanding.length,
+          outstandingOrderIds: outstanding.map((o) => o._id),
+          orders: outstanding.map((o) => ({
+            _id: o._id,
+            name: o.name,
+            systemNumber: o.systemNumber,
+            lensType: o.lensType,
+            scheme: o.scheme || '',
+            billingStatus: o.billingStatus,
+            total: o.billing?.total ?? 0,
+          })),
+        };
+      })
+      .filter((b) => b.outstandingOrders > 0);
+
+    const batchedIds = new Set(
+      batchDocs.flatMap((b) => (b.orderIds || []).map((o) => String(o?._id)))
+    );
+    const individual = orders
+      .filter((o) => !o.billing?.batchId && !batchedIds.has(String(o._id)))
+      .map((p, i) => publicPatient({ ...p, index: i + 1 }));
+
+    const summary = {
+      totalUndeliveredOrders:
+        liveBatches.reduce((s, b) => s + b.outstandingOrders, 0) + individual.length,
+      totalLiveBatches: liveBatches.length,
+      totalIndividual: individual.length,
+      totalValue:
+        liveBatches.reduce((s, b) => s + b.grandTotal, 0) +
+        individual.reduce((s, o) => s + (o.billing?.total || 0), 0),
+    };
+
+    res.json({ batches: liveBatches, individual, summary });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const deliverBatch = async (req, res, next) => {
+  try {
+    if (!requireRole(req, ['optician', 'admin'])) {
+      return res.status(403).json({ message: 'Optician or admin only' });
+    }
+    const batch = await BillingBatch.findById(req.params.id);
+    if (!batch) return res.status(404).json({ message: 'Batch not found' });
+    if (!['submitted', 'paid'].includes(batch.status)) {
+      return res.status(400).json({ message: 'Only submitted or paid batches can be delivered' });
+    }
+
+    const orders = await Patient.find({
+      _id: { $in: batch.orderIds },
+      billingStatus: { $in: ['submitted_to_director', 'paid'] },
+    });
+    if (orders.length === 0) {
+      return res.status(400).json({ message: 'No undelivered orders left in this batch' });
+    }
+
+    const now = new Date();
+    await Patient.updateMany(
+      { _id: { $in: orders.map((o) => o._id) } },
+      {
+        $set: {
+          billingStatus: 'delivered',
+          orderDelivered: true,
+          deliveredAt: now,
+          deliveredBy: req.user._id,
+          deliveredByName: req.user.name,
+        },
+      }
+    );
+
+    await writeAudit(req, {
+      action: 'billing.batch_deliver',
+      resource: 'BillingBatch',
+      resourceId: batch._id.toString(),
+      meta: { batchNumber: batch.batchNumber, deliveredCount: orders.length },
+    });
+
+    res.json({
+      message: `Delivered ${orders.length} order(s) in batch ${batch.batchNumber}`,
+      deliveredCount: orders.length,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const deliverIndividual = async (req, res, next) => {
+  try {
+    if (!requireRole(req, ['optician', 'admin'])) {
+      return res.status(403).json({ message: 'Optician or admin only' });
+    }
+    const p = await Patient.findById(req.params.id);
+    if (!p) return res.status(404).json({ message: 'Patient not found' });
+    if (p.billingStatus === 'delivered') {
+      return res.status(400).json({ message: 'Already delivered' });
+    }
+    if (!['submitted_to_director', 'paid'].includes(p.billingStatus)) {
+      return res.status(400).json({
+        message: 'Only submitted or paid orders can be delivered',
+      });
+    }
+
+    p.billingStatus = 'delivered';
+    p.orderDelivered = true;
+    p.deliveredAt = p.deliveredAt || new Date();
+    p.deliveredBy = req.user._id;
+    p.deliveredByName = req.user.name;
+    await p.save();
+
+    await writeAudit(req, {
+      action: 'billing.individual_deliver',
+      resource: 'Patient',
+      resourceId: p._id.toString(),
+      meta: { systemNumber: p.systemNumber },
+    });
+
+    res.json({ message: 'Order marked delivered', patient: publicPatient(p) });
   } catch (err) {
     next(err);
   }

@@ -36,6 +36,7 @@ import DirectorOrders from './pages/DirectorOrders.jsx';
 import OpticianBilled from './pages/OpticianBilled.jsx';
 import PaymentChannels from './pages/PaymentChannels.jsx';
 import OpticianSubmitted from './pages/OpticianSubmitted.jsx';
+import UndeliveredOrders from './pages/UndeliveredOrders.jsx';
 
 const AdminOnly = ({ children }) => {
   const { user, loading } = useAuth();
@@ -93,6 +94,9 @@ const App = () => (
     <Route path="/settings" element={<AdminOnly><Layout><Settings /></Layout></AdminOnly>} />
     <Route path="/audit" element={<AdminOnly><Layout><Audit /></Layout></AdminOnly>} />
     <Route path="/payment-channels" element={<AdminOnly><Layout><PaymentChannels /></Layout></AdminOnly>} />
+
+    {/* Optician + Admin */}
+    <Route path="/undelivered" element={<RoleGate roles={['optician', 'admin']}><Layout><UndeliveredOrders /></Layout></RoleGate>} />
 
     {/* Optician */}
     <Route path="/optician/pending" element={<RoleGate roles={['optician', 'admin']}><Layout><OpticianPending /></Layout></RoleGate>} />
