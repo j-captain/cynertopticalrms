@@ -236,7 +236,7 @@ const Dashboard = () => {
           transition={{ delay: 0.2 }}
           className="card p-5 lg:col-span-2"
         >
-          <h2 className="text-sm font-bold text-slate-900 mb-1">Order Emails — Last 7 Days</h2>
+          <h2 className="text-sm font-bold text-slate-900 mb-1">Order Emails - Last 7 Days</h2>
           <p className="text-xs text-slate-500 mb-4">Number of order emails submitted per day.</p>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">

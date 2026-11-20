@@ -268,7 +268,7 @@ const UndeliveredOrders = () => {
         </p>
       </div>
 
-      {/* Summary strip — admin only */}
+      {/* Summary strip - admin only */}
       {isAdmin && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
           <SummaryCard icon={Package} label="Undelivered Orders" value={summary.totalUndeliveredOrders || 0} accent="bg-sky-50 text-sky-600" />
@@ -518,7 +518,7 @@ const UndeliveredOrders = () => {
                         </td>
                         <td className="px-2 py-1.5 text-slate-600 whitespace-nowrap">{o.scheme || '-'}</td>
                         <td className="px-2 py-1.5 text-slate-500 font-mono text-[10px] whitespace-nowrap">
-                          {o.batchNumber || '—'}
+                          {o.batchNumber || '-'}
                         </td>
                         <td className="px-2 py-1.5 text-right tabular-nums">{money(o.total)}</td>
                         <td className="px-2 py-1.5">

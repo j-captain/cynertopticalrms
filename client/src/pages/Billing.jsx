@@ -400,7 +400,7 @@ const Billing = () => {
     exportTablePdf({ title: 'Billing Table', subtitle: subtitleParts.join(' · ') || 'All orders', columns, rows: pdfRows });
   };
 
-  /* ─── Summary cards (Orders tab) — Submitted & Paid count cards removed ─── */
+  /* ─── Summary cards (Orders tab) - Submitted & Paid count cards removed ─── */
   const cards = useMemo(() => summary ? [
     { label: 'Pending',          value: summary.pendingCount,    cls: 'text-amber-600',   icon: Clock },
     { label: 'Billed (draft)',   value: summary.billedCount,     cls: 'text-sky-600',     icon: Wallet },
@@ -513,7 +513,7 @@ const Billing = () => {
         <div>
           <h1 className="text-xl font-extrabold text-slate-900">Billing</h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Full billing control — bill, edit, submit batches, mark paid, deliver, revert.
+            Full billing control - bill, edit, submit batches, mark paid, deliver, revert.
           </p>
         </div>
         <div className="flex items-center gap-2">
