@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Users as UsersIcon, FileText, LogOut, PlusCircle,
   ShoppingBag, Settings as SettingsIcon, ShieldCheck, UserCircle,
   ChevronsLeft, ChevronsRight, Menu, X, Stethoscope, Building2, UserCog,
-  Database, FolderOpen, Glasses, LogIn, ClipboardList, Package, Wallet, CreditCard, Send,
+  Database, FolderOpen, Glasses, LogIn, ClipboardList, Package, Wallet, CreditCard, Send, Truck,
 } from 'lucide-react';
 import Logo from './Logo.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -16,6 +16,7 @@ const ADMIN_NAV = [
   { to: '/patients/new', label: 'New Record', icon: PlusCircle },
   { to: '/documents', label: 'Documents', icon: FolderOpen },
   { to: '/orders', label: 'Orders', icon: ShoppingBag },
+  { to: '/undelivered', label: 'Undelivered', icon: Truck },
   { to: '/reports', label: 'Reports', icon: FileText },
   { to: '/icd11', label: 'ICD-11 Codes', icon: Stethoscope },
   { to: '/insurance', label: 'Insurance', icon: Building2 },
@@ -49,7 +50,8 @@ const OPTICIAN_NAV = [
   { to: '/optician/amount', label: 'Order Amount', icon: Wallet },
   { to: '/optician/pending', label: 'Pending Orders', icon: ClipboardList },
   { to: '/optician/billed', label: 'Billed Orders', icon: FileText },
-  { to: '/optician/submitted', label: 'Submitted Orders', icon: Send }, 
+  { to: '/optician/submitted', label: 'Submitted Orders', icon: Send },
+  { to: '/undelivered', label: 'Undelivered', icon: Truck },
   { to: '/optician/all', label: 'All Orders', icon: Package },
 ];
 
